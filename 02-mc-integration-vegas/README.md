@@ -75,4 +75,5 @@ cross check : 1.00067222 +/- 0.01807497
 ***
 
 [1] G. P. Lepage, “A New Algorithm for Adaptive Multidimensional Integration,” J. Comp. Phys. 27, 192–203 (1978)
+
 [2] https://inspirehep.net/literature/1816703
