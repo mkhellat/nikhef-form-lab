@@ -29,7 +29,7 @@ single bon run.
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ````
 
-## [mc-vegas78-1d](mc-vegas78-1d) - MC integration optimizations with VEGAS algorithm
+## [mc-vegas78-1d](mc-vegas78-1d.c) - MC integration optimizations with VEGAS algorithm
 
 Same as `mc-eqc-1d` plus a comulative result calculation using Peter
 Lepage's VEGAS [1] [2]
