@@ -1,0 +1,45 @@
+# This is called a __diuble-suffix rule__ in GNU make and is a less
+# general method of defining __implicit rules__; double-suffix rules
+# want to state how to build any target file (stem.o) from the
+# corresponding source file (stem.c).
+#
+# Equilvalent __pattern rule__ for this is '%.o : %.c'.
+#
+# Since and implicit rule for making .o files from .c files is defined
+# here, make would not consult the pre-defined implicit rule for this:
+#
+# %.o : %.c
+#	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+#
+# $< : an automatic variable pointing to the first prerequisite,
+#      i.e. the corresponding source filename.
+# $@ : an automatic variable pointing to the target filename.
+.c.o :
+	cc -O3 -Wall -c $<
+
+OBJS =	main2.o \
+		vegas.o \
+		inplot.o \
+		boundaries.o \
+		ranf.o \
+		iipow.o \
+		ipow.o
+
+# target filename -> prog2
+# prerequisites   -> all OBJS files + the file make2
+# recipe          -> after all those .o files are built for which make
+#                    would consult the implicit rules (in our case the
+#                    double-suffix rule .c.o), link them using 
+#                            cc $(OBJS) -o prog2 -lm
+prog2 :	$(OBJS) make2
+	cc $(OBJS) -o prog2 -lm
+
+plot : prog2
+	./prog2 plot2.tex
+	latex plot2
+	dvips plot2 -o
+	ps2pdf plot2.ps
+
+.PHONY : clean
+clean :
+	- rm prog2 plot2.* $(OBJS)
