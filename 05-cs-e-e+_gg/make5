@@ -1,0 +1,27 @@
+.c.o:
+	cc -O3 -Wall -c $<
+
+OBJS =	main5.o \
+		vegas.o \
+		ranf.o \
+		inplot.o \
+		boundaries.o \
+		feegg.o \
+		meegg.o \
+		iipow.o \
+		ipow.o \
+		mgoto2.o
+
+prog5:	$(OBJS) make5
+	cc $(OBJS) -o prog5 -lm
+
+plot : prog5
+	./prog5 plot5.tex
+	curl -L -O -C - https://www.nikhef.nl/\~form/maindir/others/axodraw/axodraw.sty
+	latex plot5
+	dvips plot5 -o
+	ps2pdf plot5.ps
+
+.PHONY : clean
+clean :
+	- rm -f prog5 $(OBJS) plot5.* axodraw.sty
