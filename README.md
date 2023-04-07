@@ -16,3 +16,5 @@ pipeline for VEGAS multi-dimensional integratopn
 
 [04-cs-e-e+_e-e+](04-cs-e-e+_e-e+) - calculation of $e^- e^+ \to e^- e^+$ scattering with a modified version performing variance reduction
 using mapping techniques
+
+[05-cs-e-e+_gg](05-cs-e-e+_gg) - calculation of $e^- e^+ \to \gamma \gamma$ scattering cross-section
