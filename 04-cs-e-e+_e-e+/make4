@@ -1,0 +1,45 @@
+.c.o:
+	cc -O3 -Wall -c $<
+
+OBJS =	main4.o \
+		vegas.o \
+		ranf.o \
+		inplot.o \
+		boundaries.o \
+		feeee.o \
+		meeee.o \
+		iipow.o \
+		ipow.o \
+		mgoto2.o
+
+OBJSA =	main4a.o \
+		vegas.o \
+		ranf.o \
+		inplot.o \
+		boundaries.o \
+		feeeea.o \
+		meeee.o \
+		iipow.o \
+		ipow.o \
+		mgoto2.o
+
+prog4:	$(OBJS) make4
+	cc $(OBJS) -g -o prog4 -lm
+
+prog4a:	$(OBJSA) make4
+	cc $(OBJSA) -o prog4a -lm
+
+plot : prog4 prog4a
+	./prog4 plot4.tex
+	./prog4a plot4a.tex
+	curl -L -O -C - https://www.nikhef.nl/\~form/maindir/others/axodraw/axodraw.sty
+	latex plot4
+	dvips plot4 -o
+	ps2pdf plot4.ps
+	latex plot4a
+	dvips plot4a -o
+	ps2pdf plot4a.ps
+
+.PHONY : clean
+clean :
+	- rm -f prog4 prog4a $(OBJS) $(OBJSA) plot4.* plot4a.* axodraw.sty
