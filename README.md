@@ -13,3 +13,6 @@ integration using 1978 version of VEGAS algorithm
 pipeline for VEGAS multi-dimensional integratopn
 
 [03-cs-e-e+_mu-mu+](03-cs-e-e+_mu-mu+) - calculation of $e^- e^+ \to \mu^- \mu^+$ scattering
+
+[04-cs-e-e+_e-e+](04-cs-e-e+_e-e+) - calculation of $e^- e^+ \to e^- e^+$ scattering with a modified version performing variance reduction
+using mapping techniques
