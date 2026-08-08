@@ -1,4 +1,4 @@
-# This is called a __diuble-suffix rule__ in GNU make and is a less
+# This is called a __double-suffix rule__ in GNU make and is a less
 # general method of defining __implicit rules__; double-suffix rules
 # want to state how to build any target file (stem.o) from the
 # corresponding source file (stem.c).
