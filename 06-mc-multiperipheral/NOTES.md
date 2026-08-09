@@ -110,6 +110,11 @@ case, where it produced `EmptySet` instead of a clean "no solution" or
 
 ### Worked example 1: our diagram is a tree ($L=0$)
 
+<img src="figures/multiperipheral.svg" alt="multiperipheral tree with q1, q2 momentum-cut demonstration" width="430">
+
+(source: `figures/multiperipheral.tex`, `tikz-feynman` — same figure used
+again in Topic 3's diagram section below, since it's the same diagram.)
+
 Vertex equations (incoming-positive convention):
 
 - Vertex $A$: $p_1 = p_3+q_1 \Rightarrow q_1=p_1-p_3$
