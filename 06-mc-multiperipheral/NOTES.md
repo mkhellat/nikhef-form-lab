@@ -1020,22 +1020,54 @@ conservation, or (b) a genuinely flat/uncorrelated direction that
 contributes only an overall constant to the integral (e.g. $2\pi$) without
 adding any structure worth stratifying/mapping.
 
-**Check against the familiar 2-body case ($n=2$):** $3n-4=2$. In the CM
-frame, once $\sqrt{s}$ is fixed and one particle's momentum is chosen the
-other is back-to-back by conservation — the only freedom left is the
-direction of one outgoing particle: $(\theta,\phi)$, exactly 2 numbers.
-$\theta$ is physical (it sets $t=(p_1-p_3)^2$, a propagator variable).
-$\phi$ (azimuth around the beam axis) is "trivial" in the sense above: for
-unpolarized beams the physics doesn't depend on it, it integrates to a flat
-factor of $2\pi$ — but it is still formally one of the $3n-4$ numbers, not
-a *third* subtraction on top of $3n-4$. This matters: **the naive
-expectation that you should separately subtract 3 more for "overall
-rotational freedom of the final state" is wrong** — only 1 direction
-(azimuth about the fixed beam axis) is a symmetry for a fixed-beam
-collision; the polar orientation relative to the beam is physical. So
-$3n-4$ already has exactly the right amount of "triviality" baked in via
-the conservation-law subtraction alone; there is no separate rotational
-subtraction to make.
+**Now checked directly against the primary reference, not just derived
+independently.** Byckling & Kajantie, *Particle Kinematics* (1973),
+Table III.1 (p.49) — the standard reference this whole counting scheme
+traces back to — gives *four* distinct variable counts for a $2\to n$
+process, not one, and it matters which one "$3n-4$" refers to:
+
+| Byckling–Kajantie row | count ($2\to n$) | example ($2\to2$) |
+|---|---|---|
+| All Variables | $3n-3$ | $s,t,\phi$ |
+| Essential Variables | $3n-4$ | $s,t$ |
+| **Final State Variables** | $3n-4$ | $t,\phi$ |
+| Essential Final State Variables | $3n-5$ | $t$ |
+
+Two different rows both give $3n-4$, for different reasons: "Essential
+Variables" ($s,t$) counts the whole process including $s$ (the total
+CM energy², fixed by the beam energy — not something a Monte Carlo run
+integrates over) while already dropping $\phi$ as trivial; "**Final
+State Variables**" ($t,\phi$) counts only the outgoing particles'
+freedom (correctly excluding $s$, since $\sqrt{s}$ is a fixed
+experimental input here, matching `eepi.c`'s `eemminput.sq`) while
+*including* $\phi$. Vermaseren's sentence, and this document's Topic 2,
+are about final-state phase-space integration for a fixed beam
+energy — so the relevant row is **"Final State Variables," $3n-4$,
+which does include the trivial $\phi$** — matching what this document
+independently derived from the code below. The further reduction this
+document found (`pickin`/`orient`/`eepi` sample only 4 of the formal 5
+slots for $n=3$, dropping $\phi$ as computed-not-sampled) is exactly
+Byckling–Kajantie's own next row, "**Essential Final State Variables**,"
+$3n-5$ — for $n=3$: $3n-5=4$, matching exactly.
+
+**Check against the familiar 2-body case ($n=2$):** "Final State
+Variables" $=3n-4=2$: $(\theta,\phi)$, or equivalently $(t,\phi)$ per the
+table's own example, since $\theta$ and $t=(p_1-p_3)^2$ carry the same
+information. $\theta$/$t$ is physical. $\phi$ (azimuth around the beam
+axis) is "trivial" in the sense above: for unpolarized beams the physics
+doesn't depend on it, it integrates to a flat factor of $2\pi$ — but it
+is still formally one of the $3n-4$ "Final State Variables," not a
+*third* subtraction on top of $3n-4$; Byckling–Kajantie's own "Essential
+Final State Variables" row performs that subtraction separately, giving
+$3n-5=1$ (just $t$) for $n=2$. This matters: **the naive expectation
+that you should separately subtract 3 more for "overall rotational
+freedom of the final state" is wrong** — only 1 direction (azimuth about
+the fixed beam axis) is a symmetry for a fixed-beam collision; the polar
+orientation relative to the beam is physical. So $3n-4$ ("Final State
+Variables") already has exactly the right amount of "triviality" baked
+in via the conservation-law subtraction alone, and the one further
+trivial direction ($\phi$) is removed by a *separate*, well-defined next
+step ($3n-4\to3n-5$) rather than needing 3 more ad hoc subtractions.
 
 ### Checking this against our actual code: `pickin.c`/`orient.c`/`eepi.c` ($n=3$)
 
@@ -1186,17 +1218,25 @@ than Monte Carlo integration.
 
 ### Open threads / not yet resolved
 
-- We have not yet connected this counting argument to the *general*
-  $n$ Byckling–Kajantie derivation (i.e., confirming that for any $n$
-  exactly one azimuthal direction is always "free" this way, not just for
-  $n=3$) — worth checking if we build a $2\to4$ exercise (`eemm.c`) later,
-  where `rannums[4]`, `rannums[5]`, `rannums[6]` appear (per `gamgam.c`/
-  `epmm.c`) for the *additional* 2-body sub-decay, which does introduce a
-  genuine extra azimuthal random draw (`phicm6` in `gamgam.c`) — that one
-  is NOT trivial, because the muon pair's decay plane orientation relative
-  to the produced-photon-pair *is* physical once photon polarization/spin
-  correlations matter. This distinction (which azimuths are trivial vs.
-  physical, and why) is worth a dedicated future topic.
+- **Resolved** (previously open): whether the $n=3$ "one azimuthal
+  direction is always free" finding generalizes to any $n$, not just our
+  case. Byckling & Kajantie, *Particle Kinematics* (1973), Table III.1
+  (p.49) states the general-$n$ result directly: "Final State Variables"
+  ($3n-4$, includes one trivial azimuth $\phi$) reduces to "Essential
+  Final State Variables" ($3n-5$, $\phi$ dropped) for *any* $2\to n$
+  process — not a special feature of $n=3$. See the table added above.
+  What remains genuinely open, and is *not* resolved by this table: for
+  a $2\to4$ process built from a 2-body sub-decay (`eemm.c`/`gamgam.c`/
+  `epmm.c`, where `rannums[4..6]` appear), the *additional* azimuthal
+  random draw `phicm6` in `gamgam.c` is explicitly flagged in this
+  document (Topic 2 caveats above) as **not** trivial in the same way —
+  the sub-decay plane's orientation relative to the produced pair is
+  physical once polarization/spin correlations matter. Byckling–Kajantie's
+  table counts exactly *one* trivial azimuth per $2\to n$ process (the
+  overall azimuth about the beam axis); it does not by itself say
+  anything about additional azimuths introduced by sub-decay structure,
+  which is a separate physical question this document has not resolved
+  and would be worth its own topic if the $2\to4$ exercise is built.
 
 ---
 
