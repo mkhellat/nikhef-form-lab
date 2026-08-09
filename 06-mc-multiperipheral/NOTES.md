@@ -805,9 +805,35 @@ peaks for the coordinate budget" as a previous version of this document
 suggested. Whether the true multi-diagram case (many diagrams, each
 contributing its own $t$-type peaks) is better handled by generalizing
 `pickin`/`orient`'s method (more coordinates, still unsplit) or by
-Byers–Yang/Byckling–Kajantie-style splitting into single-peak pieces is
-a real design choice the paper does not resolve in general — it resolves
-it only for this one diagram.
+splitting into single-peak pieces is a real design choice the paper does
+not resolve in general — it resolves it only for this one diagram.
+
+**Correction — a citation this document previously got wrong.** An
+earlier version of this section attributed the splitting-into-pieces idea
+itself to "Byers–Yang/Byckling–Kajantie," without having read either
+source. Having now read Byers & Yang (1964, *Rev. Mod. Phys.* 36, 595 —
+the paper cited in `part5.pdf`'s own history section for "solving phase
+space this way"), that attribution was not supported: Byers–Yang is a
+rigorous mathematical paper about (a) classifying which regions of
+pairwise-invariant space $\{i,j\}=p_i\cdot p_j$ are physically realizable
+by an actual set of $n$ four-momenta (via matrix rank/signature theorems;
+the $n=3$ Dalitz-plot cubic surface, with its "horns" and conical points,
+is the worked illustration), and (b) deriving the general-$n$
+**phase-space volume element / Jacobian** in closed form (their Theorem
+13, eq. 79) in terms of Gram-determinant-like invariants $\Delta_l$ —
+**this** is what `pickin.c`'s own header comment is citing when it names
+$\Delta_4$ and the Jacobian $1/\sqrt{-\Delta_4}$: Byers–Yang's formula is
+the origin of using $\Delta_4$ as an integration variable for numerical
+stability, not merely "credited in the lecture" as previously stated
+without verification. Nowhere in Byers–Yang is there any discussion of
+$O(2^n)$-style peak counting or splitting phase space into pieces — that
+idea, per the actual text of Vermaseren's paper (p.349, quoted above), is
+not attributed to a citation there either; it is presented as
+Vermaseren's own methodological framing (his "event generation of the
+second/third kind" terminology). The lecture's history bullet crediting
+Byers–Yang for "solving phase space this way" refers specifically to the
+invariant-variable/Jacobian formulation, not to the peak-counting
+argument this document has been trying to trace to a citation.
 
 **Correction — "number of pieces," "number of peaks," and "number of
 diagrams" are three different quantities, not one; an earlier draft of
@@ -1162,7 +1188,15 @@ and the same comment (`pickin.c:17-20`) is what motivates Topic 3 later:
 it explicitly says the Jacobian is $1/\sqrt{-\Delta_4(p_1,p_2,p_3,p_4)}$
 and that numerical stability improves by using $\Delta_4$ itself as an
 integration variable instead of $s_1$ directly — this is the Jacobian-peak
-"type of peak" flagged as an open thread under Topic 1.
+"type of peak" flagged as an open thread under Topic 1. **This is now
+traced to its primary source, not just the lecture's citation list:**
+Byers & Yang (1964, *Rev. Mod. Phys.* 36, 595), Theorem 13 (eq. 79),
+derive the general-$n$ phase-space volume element in closed form as a
+product of Gram-determinant-like invariants $\Delta_l$ raised to
+$(n-5)/2$-type powers, exactly the object named $\Delta_4$ here — this
+is the actual origin of "use $\Delta_4$ as an integration variable"
+(`pickin.c`'s comment), matching the lecture's own history section
+crediting Byers–Yang specifically for "solving phase space this way."
 
 **Claim: the 5th ($3n-4=5$) variable — overall azimuth about the beam
 axis — is computed, not sampled.**
