@@ -610,6 +610,20 @@ $O(2^n)$ — an order-of-growth statement, not an exact formula, and (per
 the scope note above) a lower bound on Vermaseren's unrestricted claim,
 not a proof of it: loop-diagram propagators are not counted here at all.
 
+**A gap this closes, not previously checked:** the count above is a
+count of abstract bipartitions of $n_{ext}$ legs — it was never verified
+that every such bipartition is actually *achievable* as an internal line
+of some real cubic (trivalent) tree topology, as opposed to including
+bipartitions no valid diagram could ever realize (which would make the
+count an overcount). Checked directly for $n=3$
+(`scripts/propagator_achievability_check.py`): enumerating every cubic
+tree topology on the 5 external legs and collecting every bipartition
+realized by *some* internal line of *some* topology gives exactly the
+same 10 bipartitions the formula counts — confirmed by exact set
+equality, not just matching cardinality. So the formula is not an
+overcount; every counted propagator momentum genuinely occurs in at
+least one tree diagram for the process.
+
 | $n$ (final-state particles) | $n_{ext}=n+2$ | exact distinct propagator momenta | $2^n$ |
 |---|---|---|---|
 | 1 | 3 | 0 | 2 |
@@ -750,31 +764,49 @@ piece — and combine their results (a multichannel-Monte-Carlo pattern:
 Byers & Yang (1964), Byckling & Kajantie, credited in the lecture's own
 history section above).
 
-**So, precisely (subject to the one-coordinate-per-peak assumption
-flagged above, not proven, only illustrated):** splitting is a direct
+**Correction — "number of pieces," "number of peaks," and "number of
+diagrams" are three different quantities, not one; an earlier draft of
+this paragraph conflated them.** It claimed in one breath that the
+number of pieces needed is "on the order of" $O(2^n)$ (the
+propagator-subset count) and, two sentences later, that it's "tied to
+$O(2^n)$... since a reaction with more diagrams needs more dedicated
+configurations" — using "number of diagrams" and "number of potential
+propagator momenta" as if they were the same growing quantity. They are
+not, and the gap is large, not a rounding error: the number of distinct
+cubic tree *topologies* on $n_{ext}$ labeled external legs is the
+classical count $(2n_{ext}-5)!!$ (double factorial), which grows
+**super-exponentially** — for $n=7$ ($n_{ext}=9$) it is $135135$,
+already 550× larger than the propagator-subset count $246=2^{n+1}-n-3$
+for the same $n$ (checked directly by enumeration, not just quoted).
+Topic 1's own worked example already shows why these diverge: *one*
+diagram (ours) realizes only $n-1=2$ of the 10 potential propagators for
+$n=3$ — a diagram-count and a propagator-count are counting different
+things (how many topologies exist vs. how many distinct lines could
+appear across all of them), and nothing in this document establishes
+they track each other.
+
+**So, precisely, and now correctly scoped:** splitting is a direct
 answer to an algorithmic-cost problem, not a way of making that cost
-disappear. The total number of potential peaks across the full reaction
-is still $O(2^n)$, and in the worst case you still need on the order of
-that many *pieces* (dedicated configurations) to cover them all — the
-exponential hazard count is conserved, not eliminated. What splitting
-changes is turning one *infeasible* computation (one $3n-4$-dimensional
-map, answerable for $O(2^n)$ peaks at once — unable to succeed once
-peaks outnumber coordinates, *given* the one-map-dimension-per-singular-
-direction assumption) into a sum of *feasible* ones (one map per piece,
-each responsible only for its own small, bounded peak count — always
-constructible, as `pickin`/`orient` demonstrate for the two peaks
-$t_1,t_2$). The total computational cost of the full calculation is then
-driven by the number of pieces you need — which is itself still tied to
-$O(2^n)$ in the worst case, since a reaction with more diagrams needs
-more dedicated configurations. This is exactly why the lecture's own
-aside on p.3 flags $O(2^n)$'s practical bite directly: for
+disappear — this much is not in question. What *is* still open is how
+many pieces a real calculation needs. Two candidate quantities have been
+raised, both real complexity concerns, but distinct and not shown to be
+the same order: (a) the number of potential peaks, $O(2^n)$ in the
+propagator-subset sense derived above (tree-only, itself only a lower
+bound on Vermaseren's claim); and (b) the number of *diagrams*
+contributing to the reaction, which — per the classical tree-topology
+count just derived — can grow considerably faster than $O(2^n)$. Whichever
+one a "piece" is naturally organized around (this document has not
+settled that, and it plausibly depends on the splitting strategy chosen),
+the mismatch against the linear $3n-4$ coordinate budget is real either
+way, since both (a) and (b) are super-linear in $n$. The lecture's own
+aside on p.3 is evidence for the diagram-count version specifically: for
 $e^-e^+\to e^-e^+\mu^-\mu^+$ at low energy there are 12 diagrams, and at
 that count the amplitude-squaring method (evaluate the complex amplitude
 once, square it, cost linear in diagram count) is already preferred over
-generating dedicated phase-space configurations per diagram — a direct,
-explicit acknowledgment that per-diagram splitting itself has a cost that
-scales with the diagram count, and that cost is what you are trying to
-outrun.
+generating a dedicated phase-space configuration per diagram — a direct,
+explicit acknowledgment that per-diagram splitting has a cost that scales
+with the diagram count specifically, which is what motivates this
+example, not the propagator-subset count.
 
 **A concrete instance of "dedicated configuration" in the archive, not
 just asserted from the paper's prose:** `mgoto2.c` is a generic two-body
@@ -887,6 +919,20 @@ for n in range(1, 8):
   actually what Vermaseren has in mind rather than a genuinely
   unrestricted count over all orders — only argued it's reasonable given
   this lecture's entirely tree-level scope, not proved it's intended.
+- An earlier draft of "Why splitting phase space resolves..." conflated
+  "number of diagrams contributing to a reaction" with "number of
+  potential propagator momenta" ($O(2^n)$ in the tree-restricted sense
+  above) as if they were the same growing quantity driving the number of
+  pieces a calculation needs. They are not: the number of distinct tree
+  topologies on $n_{ext}$ legs grows like $(2n_{ext}-5)!!$
+  (super-exponential — 549× the propagator-subset count already by
+  $n=7$, verified in `scripts/topology_count_vs_propagator_count.py`),
+  not like $2^n$. This has been flagged and the conflation corrected
+  (both are now presented as distinct, real concerns, not one
+  quantity), but which one actually governs "how many dedicated
+  phase-space pieces does a real calculation need" is not resolved here
+  — it plausibly depends on the specific splitting/multichannel strategy
+  used, which this document has not investigated.
 
 ---
 
