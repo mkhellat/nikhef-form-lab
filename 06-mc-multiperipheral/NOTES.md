@@ -139,21 +139,21 @@ exchange):
 
 ![box diagram, one loop](figures/box_loop.svg)
 
-(source: `figures/box_loop.dot`, redrawn as a repo-native Graphviz asset —
+(source: `figures/box_loop.tex`, a repo-native `tikz-feynman` diagram —
 originally sketched from a photo the user shared outside the repo, rebuilt
-here rather than referencing that external file, with straight-line
-routing (`splines=line`) instead of curved splines for a rectilinear
-topology like this one.)
+here rather than referencing that external file, using the standard
+particle-physics drawing convention: straight fermion lines with arrows,
+sine-wave photon propagators, compiled with `lualatex` and converted to
+SVG.)
 
-Two fermion lines run through the diagram: $a_1\to TL\to TR\to a_2$ and
-$b_1\to BL\to BR\to b_2$. The figure labels the four internal lines
-generically ($k_1,k_2$ for the two fermion segments, $k_3,k_4$ for the two
-exchanged photons) since Graphviz's layout doesn't reliably keep a
-"top row"/"bottom row" assignment stable across edits; the prose and
-algebra below instead use position-based names ($TL,TR,BL,BR$ for the
-vertices; $k_{top},k_{bottom}$ for the two fermion segments,
-$k_{left},k_{right}$ for the two photons) since those map directly onto
-the proof. Either naming refers to the same four internal lines. The loop
+Two fermion lines run through the diagram: $a_1\to TL\to TR\to a_2$ (top,
+labeled $k_1$ on the internal segment) and $b_1\to BL\to BR\to b_2$
+(bottom, $k_2$), exchanging two photons $k_3$ (left) and $k_4$ (right).
+The prose and algebra below use position-based names ($TL,TR,BL,BR$ for
+the vertices; $k_{top}=k_1$, $k_{bottom}=k_2$ for the two fermion
+segments, $k_{left}=k_3$, $k_{right}=k_4$ for the two photons) since those
+map directly onto the proof; the figure labels are the same four internal
+lines under their $k_1$–$k_4$ names. The loop
 **is** the full rectangle, walked $TL\to TR\to BR\to BL\to TL$: cutting
 any one of the four internal lines leaves the other three still
 connecting all four vertices, so no single cut disconnects the diagram —
@@ -191,7 +191,7 @@ not a cycle:
 
 ![4-vertex chain tree diagram](figures/chain4.svg)
 
-(source: `figures/chain4.dot`.) Process: $\gamma + e^- \to e^- + \gamma +
+(source: `figures/chain4.tex`, `tikz-feynman`.) Process: $\gamma + e^- \to e^- + \gamma +
 \gamma + \gamma$ — an incoming photon Compton-scatters off an electron,
 which radiates two extra bremsstrahlung photons, drawn as one continuous
 fermion line running through 4 vertices $A,C,D,B$, each vertex emitting
@@ -678,8 +678,9 @@ claim used in Topic 1's subset-counting argument. $\blacksquare$
 
 ![multiperipheral tree with q1, q2 momentum-cut demonstration](figures/multiperipheral.svg)
 
-(source: `figures/multiperipheral.dot`, rendered with Graphviz `dot
--Tsvg`.) This is the same topology as the lecture's own ASCII diagram
+(source: `figures/multiperipheral.tex`, `tikz-feynman`, standard
+straight-fermion/wavy-photon drawing convention.) This is the same
+topology as the lecture's own ASCII diagram
 (p1→A→p3, p2→B→p5, A—q1—C, B—q2—C, C→p4), redrawn with the two internal
 lines colour-coded and the caption stating each cut's resulting partition
 explicitly.
