@@ -43,11 +43,42 @@ redundant" fact is the same telescoping mechanism used in Topic 3's proof,
 just applied to *all* vertices at once instead of one side of a single
 cut.)
 
+### A terminology warning: "external" is a graph role, not "physically fixed"
+
+Before going further, one distinction has to be nailed down, because this
+document uses "external momentum" in two senses that must not be
+conflated, and an earlier draft of this document did conflate them
+(flagged and fixed here): **"external" as used in this constraint-counting
+argument, and in Topic 3's proof, means "external to the diagram graph"**
+— a leg that is not itself an internal propagator solved for by the
+vertex equations. It says nothing about whether that leg's momentum is
+held fixed across an entire calculation.
+
+Concretely, for our own diagram: $p_1,p_2$ (the beam momenta) *are*
+physically fixed once and for all by the experiment (the beam energy).
+But $p_3,p_4,p_5$ (the final-state momenta) are "external" only in the
+graph-topological sense used here — they are not internal lines, so
+Topic 3's proof treats them as the given data from which $q_1,q_2$ are
+*derived*, for any *one* diagram evaluation. Across a full cross-section
+calculation, however, $p_3,p_4,p_5$ are exactly what the phase-space
+integral ranges over — they are not fixed at all once you zoom out from
+"one diagram evaluation" to "the integral over all of phase space." Both
+statements are true, about the same symbols, because they answer
+different questions: "is $p_3$ solved-for by the vertex equations of
+*this* diagram?" (no — it's external, in that sense) vs. "does $p_3$ take
+one fixed numerical value throughout the calculation?" (no — it's an
+integration variable). This distinction is used without further comment
+from here on; see the "How can a tree diagram peak at all" subsection of
+Topic 1 for why it matters.
+
 ### The definition (constraint-counting, not graph-shape)
 
 Let $E$ be the number of **internal** lines (propagators) in the diagram —
-these are the unknowns, since external momenta are given/fixed by the
-physical process. Compare unknowns to independent constraints:
+these are the unknowns, solved for by the vertex-conservation equations in
+terms of whatever values the diagram's external legs happen to carry (see
+the terminology warning just above — "given" here means "given once you
+fix a point in phase space," not "fixed for the whole calculation").
+Compare unknowns to independent constraints:
 
 $$L \;=\; E - (V-1) \;=\; E - V + 1$$
 
@@ -313,11 +344,13 @@ momentum is, where could a "peak" or a "non-trivial integral" possibly
 come from?
 
 **Resolution: "uniquely determined" and "integrated over" are not in
-tension, because the external momenta are not fixed inputs — they are
-exactly what the phase-space integral ranges over.** Topic 3's proof
-fixes $p_1,\dots,p_5$ and derives $q_1,q_2$ from *that one* choice — true,
-and not in question. But a cross section is not the integrand evaluated
-at one kinematic point; it is
+tension, once "external momentum" is read in the sense fixed in Topic 0's
+terminology warning** ("external to the diagram graph," not "physically
+fixed for the whole calculation"). Topic 3's proof fixes *a single point*
+$p_1,\dots,p_5$ in phase space and derives $q_1,q_2$ from *that one*
+choice — true, and not in question; that is what "external, in the
+graph-topological sense" buys you at that one point. But a cross section
+is not the integrand evaluated at one kinematic point; it is
 $$\sigma \propto \int d\Phi_n(p_3,\dots,p_{n+2}) \; |\mathcal{M}|^2,$$
 an integral over *every* kinematically allowed choice of the final-state
 momenta. $t_1,t_2,s_2,\cos\theta_4$ (Topic 2's $3n-4=5$, minus the
@@ -620,6 +653,19 @@ computational tractability, not just a taxonomy of peak types. The
 correct relationship is: $O(2^n)$ *is* directly a time-complexity-driving
 quantity, via the following chain, not a separate concern from it.
 
+**Scope reminder, carried forward from "Deriving the $O(2^n)$ propagator
+count" above, and easy to lose track of in what follows:** everything
+below uses "$O(2^n)$" loosely for the *tree-restricted* count
+$2^{n+1}-n-3$ we actually derived and verified. That count was explicitly
+established as a **lower bound** on Vermaseren's unrestricted claim, not
+a proof of it — loop-diagram contributions are not included. Nothing
+below should be read as having tightened that to an equality; the
+argument's *qualitative* structure (exponential hazard count vs. linear
+coordinate budget) holds either way, but the specific number used for
+"$O(2^n)$" in the concrete examples below (e.g. "10 potential propagators
+for $n=3$") is the tree-only figure, not a verified count of all
+diagrams' propagators.
+
 **The chain from "potential peaks" to "computation time."** Each of the
 $O(2^n)$ potential propagator momenta is a location where, if the
 diagram/kinematic region makes that propagator go near on-shell, the
@@ -659,22 +705,32 @@ statement about the size of the *menu*, and the size of that menu is
 exactly what drives total computation cost once you account for every
 diagram, not just the one worked example covers.
 
-**Where the real constraint bites.** A single Monte Carlo integration —
-one fixed set of $3n-4$ coordinates, one importance-sampling map built
-from those coordinates — can only be constructed to smooth out
-singularities that lie along *that* coordinate system's own axes (exactly
-what `mapt.c`'s `dt/t` mapping does for a $t$-channel propagator, or
-`mapw.c`'s `dw^2/w^2` for an $s$-channel one — see the Topic 2 code
-citations above). You have $3n-4$ coordinates and therefore can align
-with, at best, on the order of $3n-4$ independent singular directions in
-one such construction. Once the number of *potential* peaks in play
-exceeds that (which $O(2^n)$ guarantees happens for any reaction with
-enough diagrams), no single coordinate system can be tangent to all of
-them — some peaks are necessarily left unmapped, and the integrand blows
-up in a direction your sampling density does not follow, which is exactly
-the numerically catastrophic scenario `pi0.c`'s $1/(t_1t_2)^2$ term
-represents (Topic 1's "cancellation peak" case) if $t_1,t_2$ are not
-handled by dedicated maps.
+**Where the real constraint bites — and an explicit assumption this
+relies on.** A single Monte Carlo integration — one fixed set of $3n-4$
+coordinates, one importance-sampling map built from those coordinates —
+tames singularities by dedicating one coordinate's map to one propagator
+(exactly what `mapt.c`'s `dt/t` mapping does for $t_1$, or `mapw.c`'s
+`dw^2/w^2` for an $s$-channel invariant — see the Topic 2 code
+citations above, and note `pickin.c` does exactly this: one coordinate
+each for $t_1,t_2,s_2$). **The argument below assumes this is
+essentially one-to-one — that each coordinate's map can only be built
+tangent to one propagator's singular direction — and that assumption is
+not proven here, only illustrated by the $t_1,t_2$ example, where it
+happens to hold.** It is a plausible reading of how importance-sampling
+maps are actually constructed in this codebase (each of `mapt`/`mapw`/
+`mapla` takes one random number and produces one physical invariant), but
+the document has not ruled out a more clever coordinate handling more
+than one propagator's peak at once, and should not be read as having
+proven that's impossible. Taking the assumption as given: you have
+$3n-4$ coordinates and therefore can align with, at best, on the order of
+$3n-4$ independent singular directions in one such construction. Once
+the number of *potential* peaks in play exceeds that (which $O(2^n)$
+guarantees happens for any reaction with enough diagrams), no single
+coordinate system can be tangent to all of them — some peaks are
+necessarily left unmapped, and the integrand blows up in a direction your
+sampling density does not follow, which is exactly the numerically
+catastrophic scenario `pi0.c`'s $1/(t_1t_2)^2$ term represents (Topic 1's
+"cancellation peak" case) if $t_1,t_2$ are not handled by dedicated maps.
 
 **What splitting actually buys you.** Rather than building one
 $3n-4$-dimensional map answerable to every potential peak, partition the
@@ -694,18 +750,19 @@ piece — and combine their results (a multichannel-Monte-Carlo pattern:
 Byers & Yang (1964), Byckling & Kajantie, credited in the lecture's own
 history section above).
 
-**So, precisely:** splitting is a direct answer to an algorithmic-cost
-problem, not a way of making that cost disappear. The total number of
-potential peaks across the full reaction is still $O(2^n)$, and in the
-worst case you still need on the order of that many *pieces* (dedicated
-configurations) to cover them all — the exponential hazard count is
-conserved, not eliminated. What splitting changes is turning one
-*infeasible* computation (one $3n-4$-dimensional map, answerable for
-$O(2^n)$ peaks at once — provably unable to succeed once peaks outnumber
-coordinates, since each map dimension can only be built tangent to one
-singular direction at a time) into a sum of *feasible* ones (one map per
-piece, each responsible only for its own small, bounded peak count —
-always constructible, as `pickin`/`orient` demonstrate for the two peaks
+**So, precisely (subject to the one-coordinate-per-peak assumption
+flagged above, not proven, only illustrated):** splitting is a direct
+answer to an algorithmic-cost problem, not a way of making that cost
+disappear. The total number of potential peaks across the full reaction
+is still $O(2^n)$, and in the worst case you still need on the order of
+that many *pieces* (dedicated configurations) to cover them all — the
+exponential hazard count is conserved, not eliminated. What splitting
+changes is turning one *infeasible* computation (one $3n-4$-dimensional
+map, answerable for $O(2^n)$ peaks at once — unable to succeed once
+peaks outnumber coordinates, *given* the one-map-dimension-per-singular-
+direction assumption) into a sum of *feasible* ones (one map per piece,
+each responsible only for its own small, bounded peak count — always
+constructible, as `pickin`/`orient` demonstrate for the two peaks
 $t_1,t_2$). The total computational cost of the full calculation is then
 driven by the number of pieces you need — which is itself still tied to
 $O(2^n)$ in the worst case, since a reaction with more diagrams needs
