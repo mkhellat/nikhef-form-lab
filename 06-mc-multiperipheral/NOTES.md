@@ -330,7 +330,126 @@ those is a genuinely different (harder) combinatorial problem — related
 to counting distinct loop-diagram topologies at each loop order, which
 itself grows factorially/combinatorially with the number of external legs
 and internal loops, not via the simple subset-counting argument below.
-We have not attempted that count here.
+
+**Update: we did attempt this count** (below), since it is worth
+resolving rather than leaving open — the tree-only restriction turned
+out to understate what generalizes, once done carefully.
+
+### Non-tree generalization: loop-momentum routing and Landau singularities
+
+**Part A — the routing lemma generalizes cleanly.** For a diagram with
+$L$ independent loop momenta $k_1,\dots,k_L$ (fixed by picking a spanning
+tree of the diagram graph; the $L$ edges *not* in the spanning tree, the
+"chords," each carry one free loop momentum), the same telescoping-sum
+argument as Topic 3's proof — now applied along the spanning tree, with
+each chord contributing its own loop momentum at the point it closes the
+loop — gives: **every internal line's momentum is a signed subset-sum of
+the external momenta, plus an integer-coefficient combination of the $L$
+loop momenta.** This was verified directly (not just argued) on the box
+diagram (`figures/box_loop.tex`, $L=1$) by reusing the vertex-conservation
+solve already in Topic 0's Worked example 2 and checking each of the 4
+internal lines' loop-momentum coefficient is an integer:
+
+```python
+# scripts/loop_momentum_routing.py — reuses NOTES.md Topic 0's sympy solve
+# {(a1 - k_left,  b1 - b2 + k_left,  b1 + k_left,  k_left)} for (k_top,k_right,k_bottom,k_left)
+# k1 (top):    external part = a1,      loop coeff = -1
+# k4 (right):  external part = b1 - b2, loop coeff =  1
+# k2 (bottom): external part = b1,      loop coeff =  1
+# k3 (left):   external part = 0,       loop coeff =  1   (k3 IS the loop momentum)
+```
+
+All four coefficients are integers ($\pm1$), confirming the claim on this
+example. This part of the generalization is straightforward — it is
+standard loop-momentum routing, not new physics.
+
+**Part B — "how many can peak" does *not* generalize the same way, and
+here is why, precisely.** A tree propagator's momentum is a *fixed*
+function of the external momenta: for given external kinematics, it
+either sits near on-shell or it doesn't — a discrete, checkable condition
+per line, which is exactly what Topic 1's subset count enumerates. A loop
+propagator's momentum depends on the loop-integration variable, which
+ranges over all of (complexified) $\mathbb{R}^4$ per loop — so its
+on-shell condition $q_e^2=m_e^2$ defines a whole *surface* in
+loop-momentum space that is, generically, crossed by the integration
+contour for **any** external kinematics. A single on-shell loop
+propagator is therefore not by itself a singularity of the integral: the
+$+i\epsilon$ (Feynman) prescription deforms the contour around it without
+obstruction. This was checked explicitly, not asserted: solving
+$q_{k_1}=0$ alone for the box's loop momentum $l$ gives $l=a_1$ for *any*
+$a_1$ — no constraint on external kinematics at all.
+
+A **genuine** singularity of the loop integral (a "Landau singularity")
+requires the contour to be *pinched* — trapped between two or more
+poles approaching from opposite sides — which needs **at least two**
+on-shell lines closing off the one-complex-dimensional contour
+simultaneously, and more generally **at least $L+1$ on-shell lines** to
+pinch all $L$ loop-integration contours at $L$ loops (standard result;
+see e.g. Eden–Landshoff–Olive–Polkinghorne, *The Analytic S-Matrix*).
+This was verified directly for the box ($L=1$): solving $q_{k_1}=0$ and
+$q_{k_3}=0$ *simultaneously* has no solution unless $a_1=0$ — a genuine,
+nontrivial condition on external kinematics, unlike the single-line case.
+
+**Full classification, computed and checked, not merely argued
+(`scripts/landau_singularity_box.py`):** for every one of the $2^4-1=15$
+nonempty subsets of the box's 4 internal lines, solve for the loop
+momentum from the on-shell conditions and check whether a nontrivial
+condition on external kinematics survives:
+
+```
+S={k1}, {k2}, {k3}, {k4}   (|S|=1, all 4): generic, no kinematic
+                                             condition -- NOT genuine singularities
+S={k1,k2}: a1+b1=0        S={k1,k3}: a1=0          S={k1,k4}: a1+b1-b2=0
+S={k2,k3}: b1=0           S={k2,k4}: b2=0          S={k3,k4}: b1-b2=0
+                           (all 6 pairs: genuine codim-1 loci)
+S of size 3 (all 4 triples): genuine codim-2 loci (intersections of two pair-conditions)
+S={k1,k2,k3,k4}: genuine codim-3 locus (intersection of three pair-conditions)
+```
+
+11 genuine singularity loci out of 15 subsets — exactly matching the
+closed-form prediction $\sum_{k=L+1}^{E}\binom{E}{k} = \sum_{k=2}^{4}\binom{4}{k}
+= 6+4+1=11$ for $E=4,L=1$. The formula was checked against the explicit
+enumeration by the script itself (`assert genuine == predicted`), not
+just quoted.
+
+**Sanity check — this correctly reduces to the tree case.** At $L=0$,
+the rule "$|S|\geq L+1$" becomes "$|S|\geq1$": *every* single internal
+line's on-shell condition already counts, with no floor excluded — which
+is exactly Topic 1's tree picture, where a single propagator's on-shell
+condition ($t_1=(p_1-p_3)^2=m^2$, say) is *directly* a constraint on
+external kinematics, because there is no loop momentum to absorb it.
+This consistency check passing (rather than being assumed) is what makes
+the generalization trustworthy.
+
+**The resulting general statement.** For a diagram with $E$ internal
+lines and $L$ loops, the number of genuine (leading) Landau-singularity
+loci is bounded by
+$$\sum_{k=L+1}^{E}\binom{E}{k} \;\leq\; 2^E,$$
+**the same $O(2^E)$ order of growth as the tree case** (which is the
+$L=0,\,|S|\geq1$ special case, summing the *full* binomial range) — just
+with the smallest-subset "floor" pushed up by $L$. So: **for a single
+fixed diagram, going to higher loop order does not blow the exponential
+past $O(2^E)$ in that diagram's own internal-line count** — it stays the
+same order, only removing the (few, small) subsets that loop freedom
+absorbs.
+
+**What is genuinely new, and left open.** The above bounds singularities
+*for one fixed diagram topology*. Vermaseren's $O(2^n)$, as derived for
+trees in Topic 1, summed over subset-sums *across every diagram topology
+contributing to the reaction* — and the number of *distinct diagram
+topologies themselves*, at fixed external legs but increasing loop order,
+grows combinatorially/super-exponentially in $L$ (a much harder counting
+problem than anything solved here — related to the enumeration of
+1-particle-irreducible graphs, not attempted in this document). So the
+loop-momentum-routing and Landau-singularity results above answer "does
+$O(2^n)$-type behaviour still hold for a single loop diagram" (yes, same
+order, verified) but do **not** answer "what is the total peak count
+summed over all diagrams at all loop orders contributing to a reaction"
+— that remains open, and is plausibly a much larger quantity than
+$O(2^n)$, not a smaller one. Given that (per the scope note above)
+nothing in this course actually performs loop integration, this is
+recorded as a resolved side-investigation, not something this exercise
+needs to complete further.
 
 **Why restricting to trees is a defensible reading of Vermaseren's intent
 here, even though he does not say so explicitly:** every routine and
@@ -616,12 +735,18 @@ for n in range(1, 8):
   exhaustive list, or are there more categories the lecture has in mind
   later on?
 - The $2^{n+1}-n-3$ count above is proved only for tree diagrams (per the
-  scope note earlier in this Topic). We have not derived or even
-  estimated a general count that includes loop-diagram propagators, and
-  have not confirmed that the tree-only count is actually what Vermaseren
-  has in mind rather than a genuinely unrestricted count over all orders
-  — we've only argued it's a reasonable reading given this lecture's
-  entirely tree-level scope, not proved it's the intended one.
+  scope note earlier in this Topic). **Update:** the "Non-tree
+  generalization" subsection below now resolves the *per-diagram* part
+  of this — a single loop diagram's genuine singularity count is still
+  $O(2^E)$ in its own internal-line count $E$, verified via the Landau
+  pinch classification on the box diagram. What remains genuinely open
+  is the *sum over all diagram topologies at all loop orders* for a
+  fixed reaction — the number of distinct topologies itself grows
+  combinatorially with loop order, and we have not attempted that count.
+  We also still have not confirmed that the tree-only reading is
+  actually what Vermaseren has in mind rather than a genuinely
+  unrestricted count over all orders — only argued it's reasonable given
+  this lecture's entirely tree-level scope, not proved it's intended.
 
 ---
 
