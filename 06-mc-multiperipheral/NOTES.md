@@ -361,6 +361,116 @@ sentence in the lecture: split phase space into pieces, each handling only
 a *limited* number of peaks/poles, with a dedicated parametrization per
 piece.
 
+### Why splitting phase space "resolves" the $O(2^n)$ vs. $3n-4$ mismatch
+
+This needs to be stated precisely, because "resolves" is doing a lot of
+work and it is easy to over-claim here. **Splitting does not shrink
+$O(2^n)$; it changes what that number is a bound on.**
+
+**What $O(2^n)$ counts, re-examined.** Go back to Topic 1's own
+derivation: $2^{n+1}-n-3$ is a count of *distinct possible propagator
+momenta across every diagram/topology that could contribute to the
+reaction* — a property of the reaction ($n$ final-state particles), not
+of any single diagram or any single Monte Carlo run. The worked example
+made this concrete: for $n=3$ there are 10 potential propagator momenta
+in total, but the *one* double-t-channel diagram this lecture builds
+kinematics for uses only 2 of them ($t_1,t_2$). $O(2^n)$ is a statement
+about the size of the *menu*, not about how many items you must serve at
+once.
+
+**Where the real constraint bites.** A single Monte Carlo integration —
+one fixed set of $3n-4$ coordinates, one importance-sampling map built
+from those coordinates — can only be constructed to smooth out
+singularities that lie along *that* coordinate system's own axes (exactly
+what `mapt.c`'s `dt/t` mapping does for a $t$-channel propagator, or
+`mapw.c`'s `dw^2/w^2` for an $s$-channel one — see the Topic 2 code
+citations above). You have $3n-4$ coordinates and therefore can align
+with, at best, on the order of $3n-4$ independent singular directions in
+one such construction. Once the number of *potential* peaks in play
+exceeds that (which $O(2^n)$ guarantees happens for any reaction with
+enough diagrams), no single coordinate system can be tangent to all of
+them — some peaks are necessarily left unmapped, and the integrand blows
+up in a direction your sampling density does not follow, which is exactly
+the numerically catastrophic scenario `pi0.c`'s $1/(t_1t_2)^2$ term
+represents (Topic 1's "cancellation peak" case) if $t_1,t_2$ are not
+handled by dedicated maps.
+
+**What splitting actually buys you.** Rather than building one
+$3n-4$-dimensional map answerable to every potential peak, partition the
+calculation into pieces — physically, into different kinematic regions or
+different Feynman diagrams — where **each piece only has to be
+well-behaved near the small number of peaks that are actually relevant to
+it**. Every individual piece still only has a $3n-4$-sized coordinate
+budget, but it only needs to spend that budget on *its own* limited peak
+set, not on the full $O(2^n)$-sized menu for the whole reaction. This
+routine (`pickin`/`orient`) is itself one such piece: it is a "dedicated
+phase space configuration" for exactly one topology (the double-t-channel
+diagram), built to tame exactly $t_1$ and $t_2$ — not a general-purpose
+kinematics generator meant to also flatten the other 8 potential
+propagators in the $n=3$ example above. A full calculation for a reaction
+with many diagrams would run several such dedicated generators — one per
+piece — and combine their results (a multichannel-Monte-Carlo pattern:
+Byers & Yang (1964), Byckling & Kajantie, credited in the lecture's own
+history section above).
+
+**So, precisely:** splitting does not defeat the $O(2^n)$ growth in any
+complexity-theoretic sense — the total number of potential peaks across
+the reaction is unchanged, and in the worst case you still need on the
+order of that many *pieces* to cover them all. What splitting achieves is
+turning one intractable problem (fit $3n-4$ coordinates to $O(2^n)$
+peaks simultaneously — impossible once peaks outnumber coordinates) into
+many tractable ones (fit $3n-4$ coordinates to this piece's *bounded*,
+small peak count — always possible by construction, as `pickin`/`orient`
+demonstrate for two peaks). The cost moves from "impossible in one
+integration" to "linear in the number of pieces," which only helps if the
+number of *relevant* peaks per piece stays small and the number of pieces
+stays manageable — true for a handful of diagrams, not obviously true if
+the diagram count itself is what's growing like $O(2^n)$ (see the
+`e^-e^+\to e^-e^+\mu^-\mu^+` aside on p.3 of the lecture: "12 diagrams" at
+low energy already pushes toward preferring the amplitude-squaring method
+over per-diagram phase space splitting, for exactly this reason).
+
+**A concrete instance of "dedicated configuration" in the archive, not
+just asserted from the paper's prose:** `mgoto2.c` is a generic two-body
+decay routine, and its own doc comment (`mgoto2.c:8-9`) states plainly:
+
+```c
+/*
+    Routine for a two body decay. Note that there is no protection against
+    special peaking behaviour near ct = +-1.
+```
+
+i.e. `mgoto2` is *not* a dedicated map for the peak that can occur at
+$\cos\theta=\pm1$ — it is a general-purpose piece, left unmapped for that
+specific danger. The lecture's own text (p.2) describes the fix for
+exactly this gap for the muon-pair case: the `gamgam` routine "rotate[s]
+the m4 system first to align the photons along the z-axis, then do[es]
+the two body decay and then rotate[s] and boost[s] back" — a
+purpose-built change of coordinates so that `mgoto2`'s known blind spot
+(peaking near $ct=\pm1$) lines up with the *physical* peaking direction
+(incoming virtual photons along the beam) before sampling, rather than
+trying to build one universal map that handles both the generic 2-body
+kinematics and this reaction-specific peak at once. Neither `gamgam.c`
+nor `epmm.c` ship in `kinc.tar.gz`/`kinc1.tar.gz`/`kinc2.tar.gz` (checked
+directly — absent from all three archives), so this is corroborating,
+not directly-observed, evidence: `mgoto2.c`'s own docstring is the
+first-hand code evidence; the rotate-align-rotate-back mechanism itself
+is reported only in the lecture prose, not verified against a routine we
+can read.
+
+**One thing this is *not*:** `pickin.c`'s `option` parameter (Topic 2's
+code citations, `pickin.c:24-31`) is *not* an instance of this
+splitting/dedicated-configuration idea, even though it superficially
+looks similar (a parameter that changes which mapping function runs). It
+only changes the *order* of integration ($s_2,t_1,t_2$ vs.
+$t_1,s_2,t_2$ vs. $t_1,t_2,s_2$) and which map ($ds_2/s_2$ vs. a
+$\lambda$-function map) is used for $s_2$, always for the *same* single
+double-t-channel diagram. It tunes one piece's own map; it does not
+select between different pieces/diagrams. Conflating the two would be the
+same error flagged earlier in this document (Correction #1, Topic 0) —
+inferring more from a superficial resemblance than the code actually
+supports.
+
 ### Worked example: our own diagram, $n=3$
 
 Final state $p_3,p_4,p_5$ from $p_1,p_2 \to p_3,p_4,p_5$ (5 external legs).
