@@ -305,16 +305,58 @@ So the "different types of peaks" (claim 1) plausibly include at least:
 
 ### Deriving the $O(2^n)$ propagator count
 
+**Correction — scope of this derivation.** Vermaseren's sentence says
+"the number of potential propagators that can cause peaking" with **no
+restriction to tree diagrams anywhere in the source text** — "Feynman
+diagrams in a reaction" is unrestricted. An earlier version of this
+derivation silently substituted "in any *tree* diagram" for the source's
+unrestricted "Feynman diagrams" and never flagged that as a narrowing.
+That was a mistake: it is not Vermaseren's claim, it is a restricted
+claim of ours, and it needed to be stated and justified as such, not
+presented as if it were the same thing.
+
+**Why the derivation below is nonetheless restricted to trees, stated
+honestly:** the subset-sum lemma this count is built on (Topic 3) is
+proved *only* for tree diagrams — it relies on removing one internal line
+splitting the diagram into exactly two pieces (the unique-path property
+of trees), which fails once $L\geq1$: a loop diagram has $L$ internal
+momenta left undetermined by vertex conservation (Topic 0's
+$L=E-(V-1)$), so an internal line's momentum in a loop diagram is
+generally an external-leg subset-sum **plus an integer combination of
+the free loop momenta** — not a fixed subset-sum at all, and its "peak"
+occurs at some point along a continuous loop-integration contour, not at
+one fixed kinematic value the way a tree propagator's does. Counting
+those is a genuinely different (harder) combinatorial problem — related
+to counting distinct loop-diagram topologies at each loop order, which
+itself grows factorially/combinatorially with the number of external legs
+and internal loops, not via the simple subset-counting argument below.
+We have not attempted that count here.
+
+**Why restricting to trees is a defensible reading of Vermaseren's intent
+here, even though he does not say so explicitly:** every routine and
+worked example in this lecture (`pickin`/`orient`/`eepi`, the
+double-t-channel diagram, the "12 diagrams" aside for
+$e^-e^+\to e^-e^+\mu^-\mu^+$ at "only QED") is tree-level phase-space
+kinematics for Born-order cross sections — nothing in `part5.pdf` or the
+surrounding `kinc2.tar.gz` archive performs loop integration. So in the
+*practical context this lecture addresses*, "Feynman diagrams in a
+reaction" most likely does mean the set of tree diagrams contributing at
+that order — but this is our inference from the lecture's scope, not
+something the source text states, and it should not be read as
+Vermaseren having limited his own claim; he simply never needed to
+address loop diagrams because none appear anywhere in this material.
+
 **Setup.** For an $n$-particle final state produced from a $2\to n$ process,
 there are $n_{ext} = n+2$ external legs (2 incoming + $n$ outgoing).
 
-**Key fact (momentum conservation on any diagram):** the momentum flowing
-through *any* internal line, in *any* tree diagram for this process, equals
-(up to overall sign) the sum of a subset $S$ of the external momenta — this
-follows just from conservation at each vertex, regardless of which specific
-diagram/topology you draw. A subset $S$ and its complement $S^c$ (all other
-legs) describe the *same* physical line, since $q$ and $-q$ give the same
-propagator denominator $q^2-m^2$.
+**Key fact (momentum conservation on a tree diagram — see the scope note
+above for why this derivation is restricted to trees):** the momentum
+flowing through *any* internal line, in *any tree diagram* for this
+process, equals (up to overall sign) the sum of a subset $S$ of the
+external momenta — this follows just from conservation at each vertex,
+regardless of which specific tree topology you draw. A subset $S$ and its
+complement $S^c$ (all other legs) describe the *same* physical line,
+since $q$ and $-q$ give the same propagator denominator $q^2-m^2$.
 
 **Counting distinct possible propagator momenta.** The number of subsets of
 $n_{ext}$ legs is $2^{n_{ext}}$. Divide by 2 for the $S\leftrightarrow S^c$
@@ -328,8 +370,10 @@ $$\text{distinct propagator momenta} = 2^{n_{ext}-1} - n_{ext} - 1 = 2^{n+1} - n
 This was verified by brute-force enumeration (see calc below) for
 $n=1,\dots,7$ — exact match. Asymptotically this is $\sim 2^{n+1}$, i.e.
 $O(2^n)$: Big-O absorbs the factor of 2 and the $-n-3$ correction, which is
-exactly the sense in which the lecture's claim is correct — it's an
-order-of-growth statement, not an exact formula.
+the sense in which this *tree-restricted* count matches the lecture's
+$O(2^n)$ — an order-of-growth statement, not an exact formula, and (per
+the scope note above) a lower bound on Vermaseren's unrestricted claim,
+not a proof of it: loop-diagram propagators are not counted here at all.
 
 | $n$ (final-state particles) | $n_{ext}=n+2$ | exact distinct propagator momenta | $2^n$ |
 |---|---|---|---|
@@ -571,6 +615,13 @@ for n in range(1, 8):
   listed above (propagator / Jacobian / cancellation) — is that an
   exhaustive list, or are there more categories the lecture has in mind
   later on?
+- The $2^{n+1}-n-3$ count above is proved only for tree diagrams (per the
+  scope note earlier in this Topic). We have not derived or even
+  estimated a general count that includes loop-diagram propagators, and
+  have not confirmed that the tree-only count is actually what Vermaseren
+  has in mind rather than a genuinely unrestricted count over all orders
+  — we've only argued it's a reasonable reading given this lecture's
+  entirely tree-level scope, not proved it's the intended one.
 
 ---
 
