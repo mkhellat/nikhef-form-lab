@@ -303,6 +303,89 @@ So the "different types of peaks" (claim 1) plausibly include at least:
   is fundamentally about). Not a pole anywhere; numerically peak-like
   because relative precision collapses there.
 
+### How can a tree diagram peak at all, if every momentum is uniquely determined?
+
+A sharp objection worth resolving before going further: Topic 3 proved
+that in a tree diagram, every internal-line momentum is a *fixed*,
+uniquely-determined function of the external momenta (a signed
+subset-sum). If nothing is left free or undetermined the way a loop
+momentum is, where could a "peak" or a "non-trivial integral" possibly
+come from?
+
+**Resolution: "uniquely determined" and "integrated over" are not in
+tension, because the external momenta are not fixed inputs — they are
+exactly what the phase-space integral ranges over.** Topic 3's proof
+fixes $p_1,\dots,p_5$ and derives $q_1,q_2$ from *that one* choice — true,
+and not in question. But a cross section is not the integrand evaluated
+at one kinematic point; it is
+$$\sigma \propto \int d\Phi_n(p_3,\dots,p_{n+2}) \; |\mathcal{M}|^2,$$
+an integral over *every* kinematically allowed choice of the final-state
+momenta. $t_1,t_2,s_2,\cos\theta_4$ (Topic 2's $3n-4=5$, minus the
+trivial azimuth) are not extra freedoms *inside* one diagram's
+kinematics — they parametrize *which point of the final-state phase
+space you are currently at*. For each such point, $q_1=p_1-p_3$ is
+indeed uniquely fixed, exactly as Topic 3 proved; the peak is not a peak
+"in $q_1$" holding externals fixed, it is a peak **in the integrand as a
+function of where in phase space you are evaluating it**, as $t_1$ itself
+(one of the integration variables) sweeps close to its own on-shell value.
+
+**This is directly visible in the code, not just an abstract argument.**
+`eepi.c:14-20` — the function VEGAS calls once per Monte Carlo
+sample — takes only two things as genuinely fixed input: the beam energy
+`eemminput.sq` and the particle masses. It takes four **freshly-drawn
+random numbers** `rannums[0..3]` (uniform on $[0,1]$) as its actual
+per-call input, and *everything else, including $t_1,t_2$ and hence the
+final-state momenta $p_3,p_4,p_5$, is derived inside `pickin`/`orient`
+from those random numbers, fresh every call*:
+
+```c
+extra.t1 = mapt(t1min,t1max,&dt1,rannums[0],1);      // pickin.c:93
+```
+
+`t1min`,`t1max` (`pickin.c:90-92`) depend only on the fixed beam energy
+and masses — **not** on `rannums`. So as `rannums[0]` sweeps $[0,1]$
+across many VEGAS calls, `t1` sweeps continuously across its *entire*
+physically allowed range $[t1min,t1max]$. For any *one* call, $t_1$ (and
+hence $q_1=p_1-p_3$) is a single fixed number — but across the full
+Monte Carlo run, $t_1$ takes on every value in that range, including
+values arbitrarily close to its physical edge.
+
+**Where the actual singularity sits, and why it's reachable.** `mapt.c`'s
+own doc comment (`mapt.c:15`) states the mapping's purpose directly:
+
+```c
+/*
+    Assumes dt/t.   t < 0
+*/
+```
+
+$t_1$ is a spacelike momentum transfer, always $t_1<0$, and can approach
+$t_1\to0^-$ within the physically allowed range — exactly where the
+propagator denominator in `pi0.c`'s matrix element,
+`part1 = -64*levi.gram/(tt*tt)` with `tt = extra.t1*extra.t2`
+(`pi0.c:9`), blows up as $1/t_1^2$. `pickin.c:93` calls `mapt(...,
+rannums[0], 1)` with `type=1`, i.e. the $dt/t$ log-mapping is what
+actually runs — built for exactly this reason: a *flat* (uniform,
+`type=0`) sampling of $t_1$ would place very few Monte Carlo samples near
+$t_1\to0^-$ (a small sub-interval, linearly), even though that is
+precisely where the integrand is largest and contributes most of the
+cross section — the classic Monte Carlo variance problem. The $dt/t$ map
+instead concentrates sample density logarithmically near $t_1\to0^-$, so
+enough samples land where the integrand actually matters.
+
+**So, precisely:** a tree diagram peaking is not a contradiction of
+"every momentum is uniquely determined" — it is a restatement of it, one
+level up. Because $q_1$ is a *fixed, continuous function of $t_1$*
+($q_1^2=t_1$, trivially, by definition), and $t_1$ ranges continuously
+over an interval that gets arbitrarily close to $q_1$'s own on-shell
+point as part of the physical integration domain, the *integrand* — not
+any individual momentum — develops a sharp peak as a function of where
+in that domain you evaluate it. Determinism of $q_1$ given $t_1$ is
+exactly what *transmits* the propagator's would-be pole at $t_1=0$ into
+a peak in the phase-space integral over $t_1$; if $q_1$ were *not* a
+fixed function of the integration variables, there would be no mechanism
+for a peak in $t_1$-space to exist at all.
+
 ### Deriving the $O(2^n)$ propagator count
 
 **Correction — scope of this derivation.** Vermaseren's sentence says
