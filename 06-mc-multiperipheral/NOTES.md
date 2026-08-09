@@ -363,9 +363,38 @@ piece.
 
 ### Why splitting phase space "resolves" the $O(2^n)$ vs. $3n-4$ mismatch
 
-This needs to be stated precisely, because "resolves" is doing a lot of
-work and it is easy to over-claim here. **Splitting does not shrink
-$O(2^n)$; it changes what that number is a bound on.**
+**Correction to an earlier draft of this section:** an earlier version of
+this note argued that $O(2^n)$ "has nothing to do with algorithmic time
+complexity" and was purely a combinatorial/structural count. That was
+wrong, and the lecture's own opening sentence says so directly: "this
+does *not* mean that with the routines we study here we can calculate all
+reactions trivially" — stated as the immediate consequence of the
+$O(2^n)$-vs-$3n-4$ mismatch. This is explicitly a claim about
+computational tractability, not just a taxonomy of peak types. The
+correct relationship is: $O(2^n)$ *is* directly a time-complexity-driving
+quantity, via the following chain, not a separate concern from it.
+
+**The chain from "potential peaks" to "computation time."** Each of the
+$O(2^n)$ potential propagator momenta is a location where, if the
+diagram/kinematic region makes that propagator go near on-shell, the
+integrand becomes sharply peaked. Plain (unweighted/uniform) Monte Carlo
+sampling converges as $O(1/\sqrt{N})$ *only if the sampling density
+roughly tracks the integrand* — near an untamed peak it does not, so the
+variance of the estimator blows up and the number of samples $N$ needed
+to reach a fixed target accuracy grows correspondingly (in the worst
+case, without any importance-sampling map at all, an integrable but sharp
+peak can require many orders of magnitude more samples, or fail to
+converge to acceptable precision in practical time at all). Importance
+sampling (`mapt.c`'s `dt/t`, `mapw.c`'s `dw^2/w^2`, etc. — Topic 2's code
+citations) is precisely the fix, but each such map consumes one of your
+$3n-4$ integration-variable "slots" to concentrate sampling density along
+one specific singular direction. So: $O(2^n)$ counts the number of
+distinct places variance could blow up, $3n-4$ counts how many of those
+places you can afford to build a dedicated map for *in one pass*. The
+mismatch between an exponentially-growing hazard count and a
+linearly-growing map budget is exactly why "calculate all reactions
+trivially" fails as the number of diagrams grows — this is a direct,
+not incidental, algorithmic-complexity statement.
 
 **What $O(2^n)$ counts, re-examined.** Go back to Topic 1's own
 derivation: $2^{n+1}-n-3$ is a count of *distinct possible propagator
@@ -374,9 +403,15 @@ reaction* — a property of the reaction ($n$ final-state particles), not
 of any single diagram or any single Monte Carlo run. The worked example
 made this concrete: for $n=3$ there are 10 potential propagator momenta
 in total, but the *one* double-t-channel diagram this lecture builds
-kinematics for uses only 2 of them ($t_1,t_2$). $O(2^n)$ is a statement
-about the size of the *menu*, not about how many items you must serve at
-once.
+kinematics for uses only 2 of them ($t_1,t_2$). Critically, this does not
+make $O(2^n)$ a purely combinatorial/non-computational fact: *every one*
+of those 10 potential propagators is a place some diagram contributing to
+the full reaction could peak, and a complete calculation of the reaction
+(summing all contributing diagrams) must, in some piece of the
+calculation, be numerically safe near each of them. $O(2^n)$ is a
+statement about the size of the *menu*, and the size of that menu is
+exactly what drives total computation cost once you account for every
+diagram, not just the one worked example covers.
 
 **Where the real constraint bites.** A single Monte Carlo integration —
 one fixed set of $3n-4$ coordinates, one importance-sampling map built
@@ -413,22 +448,30 @@ piece — and combine their results (a multichannel-Monte-Carlo pattern:
 Byers & Yang (1964), Byckling & Kajantie, credited in the lecture's own
 history section above).
 
-**So, precisely:** splitting does not defeat the $O(2^n)$ growth in any
-complexity-theoretic sense — the total number of potential peaks across
-the reaction is unchanged, and in the worst case you still need on the
-order of that many *pieces* to cover them all. What splitting achieves is
-turning one intractable problem (fit $3n-4$ coordinates to $O(2^n)$
-peaks simultaneously — impossible once peaks outnumber coordinates) into
-many tractable ones (fit $3n-4$ coordinates to this piece's *bounded*,
-small peak count — always possible by construction, as `pickin`/`orient`
-demonstrate for two peaks). The cost moves from "impossible in one
-integration" to "linear in the number of pieces," which only helps if the
-number of *relevant* peaks per piece stays small and the number of pieces
-stays manageable — true for a handful of diagrams, not obviously true if
-the diagram count itself is what's growing like $O(2^n)$ (see the
-`e^-e^+\to e^-e^+\mu^-\mu^+` aside on p.3 of the lecture: "12 diagrams" at
-low energy already pushes toward preferring the amplitude-squaring method
-over per-diagram phase space splitting, for exactly this reason).
+**So, precisely:** splitting is a direct answer to an algorithmic-cost
+problem, not a way of making that cost disappear. The total number of
+potential peaks across the full reaction is still $O(2^n)$, and in the
+worst case you still need on the order of that many *pieces* (dedicated
+configurations) to cover them all — the exponential hazard count is
+conserved, not eliminated. What splitting changes is turning one
+*infeasible* computation (one $3n-4$-dimensional map, answerable for
+$O(2^n)$ peaks at once — provably unable to succeed once peaks outnumber
+coordinates, since each map dimension can only be built tangent to one
+singular direction at a time) into a sum of *feasible* ones (one map per
+piece, each responsible only for its own small, bounded peak count —
+always constructible, as `pickin`/`orient` demonstrate for the two peaks
+$t_1,t_2$). The total computational cost of the full calculation is then
+driven by the number of pieces you need — which is itself still tied to
+$O(2^n)$ in the worst case, since a reaction with more diagrams needs
+more dedicated configurations. This is exactly why the lecture's own
+aside on p.3 flags $O(2^n)$'s practical bite directly: for
+$e^-e^+\to e^-e^+\mu^-\mu^+$ at low energy there are 12 diagrams, and at
+that count the amplitude-squaring method (evaluate the complex amplitude
+once, square it, cost linear in diagram count) is already preferred over
+generating dedicated phase-space configurations per diagram — a direct,
+explicit acknowledgment that per-diagram splitting itself has a cost that
+scales with the diagram count, and that cost is what you are trying to
+outrun.
 
 **A concrete instance of "dedicated configuration" in the archive, not
 just asserted from the paper's prose:** `mgoto2.c` is a generic two-body
