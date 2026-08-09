@@ -719,50 +719,95 @@ statement about the size of the *menu*, and the size of that menu is
 exactly what drives total computation cost once you account for every
 diagram, not just the one worked example covers.
 
-**Where the real constraint bites — and an explicit assumption this
-relies on.** A single Monte Carlo integration — one fixed set of $3n-4$
-coordinates, one importance-sampling map built from those coordinates —
-tames singularities by dedicating one coordinate's map to one propagator
+**Where the real constraint bites — an assumption now backed by the
+primary source, not just illustrated by one example.** A single Monte
+Carlo integration — one fixed set of $3n-4$ coordinates, one
+importance-sampling map built from those coordinates — tames
+singularities by dedicating one coordinate's map to one propagator
 (exactly what `mapt.c`'s `dt/t` mapping does for $t_1$, or `mapw.c`'s
 `dw^2/w^2` for an $s$-channel invariant — see the Topic 2 code
 citations above, and note `pickin.c` does exactly this: one coordinate
-each for $t_1,t_2,s_2$). **The argument below assumes this is
-essentially one-to-one — that each coordinate's map can only be built
-tangent to one propagator's singular direction — and that assumption is
-not proven here, only illustrated by the $t_1,t_2$ example, where it
-happens to hold.** It is a plausible reading of how importance-sampling
-maps are actually constructed in this codebase (each of `mapt`/`mapw`/
-`mapla` takes one random number and produces one physical invariant), but
-the document has not ruled out a more clever coordinate handling more
-than one propagator's peak at once, and should not be read as having
-proven that's impossible. Taking the assumption as given: you have
-$3n-4$ coordinates and therefore can align with, at best, on the order of
-$3n-4$ independent singular directions in one such construction. Once
-the number of *potential* peaks in play exceeds that (which $O(2^n)$
-guarantees happens for any reaction with enough diagrams), no single
-coordinate system can be tangent to all of them — some peaks are
-necessarily left unmapped, and the integrand blows up in a direction your
-sampling density does not follow, which is exactly the numerically
-catastrophic scenario `pi0.c`'s $1/(t_1t_2)^2$ term represents (Topic 1's
-"cancellation peak" case) if $t_1,t_2$ are not handled by dedicated maps.
+each for $t_1,t_2,s_2$). The argument below relies on this being
+essentially one-coordinate-per-peak. An earlier version of this document
+flagged that as an unproven assumption, illustrated only by the
+$t_1,t_2$ example. Having now read Vermaseren's paper directly (p.349;
+quoted in full in the "What splitting actually buys you" section below),
+this is confirmed as the actual design of "event generation of the third
+kind" — the method `pickin`/`orient` implements: the propagator
+denominators are *directly* used as integration variables, one each, and
+mapped via $\ln(-t_1),\ln(-t_2)$, handling both peaks together in one
+unsplit calculation precisely *because* each gets its own coordinate.
+The paper does not claim this is the only possible construction (a
+cleverer joint map might exist in principle), but it is the method
+actually used and documented, not merely an assumption read into the
+code. Taking it as the operative design: you have $3n-4$ coordinates and
+therefore can align with, at best, on the order of $3n-4$ independent
+singular directions in one such construction. Once the number of
+*potential* peaks in play exceeds that (which $O(2^n)$ guarantees
+happens for any reaction with enough diagrams), no single coordinate
+system can be tangent to all of them — some peaks are necessarily left
+unmapped, and the integrand blows up in a direction your sampling density
+does not follow, which is exactly the numerically catastrophic scenario
+`pi0.c`'s $1/(t_1t_2)^2$ term represents (Topic 1's "cancellation peak"
+case) if $t_1,t_2$ are not handled by dedicated maps.
 
-**What splitting actually buys you.** Rather than building one
-$3n-4$-dimensional map answerable to every potential peak, partition the
-calculation into pieces — physically, into different kinematic regions or
-different Feynman diagrams — where **each piece only has to be
-well-behaved near the small number of peaks that are actually relevant to
-it**. Every individual piece still only has a $3n-4$-sized coordinate
-budget, but it only needs to spend that budget on *its own* limited peak
-set, not on the full $O(2^n)$-sized menu for the whole reaction. This
-routine (`pickin`/`orient`) is itself one such piece: it is a "dedicated
-phase space configuration" for exactly one topology (the double-t-channel
-diagram), built to tame exactly $t_1$ and $t_2$ — not a general-purpose
-kinematics generator meant to also flatten the other 8 potential
-propagators in the $n=3$ example above. A full calculation for a reaction
-with many diagrams would run several such dedicated generators — one per
-piece — and combine their results (a multichannel-Monte-Carlo pattern:
-Byers & Yang (1964), Byckling & Kajantie, credited in the lecture's own
-history section above).
+**Correction, now grounded in the primary source rather than inferred:**
+an earlier version of this section claimed `pickin`/`orient` itself *is*
+an example of "splitting phase space into pieces." Having now read
+Vermaseren's own paper (J.A.M. Vermaseren, "Two-photon processes at very
+high energies," *Nucl. Phys.* B229 (1983) 347–371, p.349 — the very paper
+Vermaseren's `part5.pdf` lecture cites and this whole exercise is based
+on), that was wrong: the paper explicitly describes **two different
+methods**, and `pickin`/`orient` is a worked example of the *other* one,
+not the splitting method.
+
+- **"Event generation of the second kind"** (p.349, first method):
+  rewrite the phase-space integral so experimental cuts each become a
+  single integration variable. Disadvantage, in the paper's own words:
+  "the peaks of the matrix element now show up as a correlation between
+  several variables so it is harder to integrate over them. It might be
+  necessary therefore **to split the phase space up into various pieces
+  such that each piece contains a single peak**. One can then
+  concentrate separately on each piece in order to integrate it
+  accurately." This is *the* splitting method Topic 1's source sentence
+  refers to — and the paper is explicit that pieces are organized
+  **one peak per piece**, confirming (from the primary source, not
+  inference) the open question left in the previous version of this
+  document about what a "piece" is organized around.
+- **"Event generation of the third kind"** (p.349, second method — **the
+  one the paper actually uses, and what `pickin`/`orient` implements**):
+  rewrite the integral so the propagator denominators $t_1,t_2$
+  themselves become the integration variables, then map them via
+  $\ln(-t_1),\ln(-t_2)$ — exactly `mapt.c`'s `dt/t`. Combined with VEGAS's
+  own adaptive multi-dimensional grid, this handles **both** $t_1,t_2$
+  peaks *in one unsplit calculation*, without partitioning phase space at
+  all. The paper states its advantage directly: "the great advantage of
+  this method is its universality as one program can deal with any kind
+  of experimental cuts" — the opposite tradeoff from splitting, which the
+  paper says needs "a completely different reformulation of the
+  phase-space integrals if the nature of the cuts is changed drastically"
+  (a disadvantage explicitly *not* shared by the method `pickin`/`orient`
+  uses).
+
+So `pickin`/`orient` is not a "dedicated piece" of a split calculation —
+it is a complete, unsplit generator for the one double-t-channel diagram,
+using the *other* of the two methods the paper describes specifically to
+avoid needing to split at all for this diagram's two peaks. This also
+sharpens (rather than merely leaves open) the earlier flagged
+"one-coordinate-per-peak" assumption: `pickin`/`orient` is direct
+evidence that **within the $\ln(-t)$-style method**, one dedicated
+coordinate per propagator peak, handled together in a single VEGAS
+integration, is not just possible but is exactly the paper's preferred
+approach for a small, fixed number of peaks (here, two) — splitting
+(method one, single-peak-per-piece) is reserved for the harder case where
+cuts *correlate* several variables' peaks together, not simply "too many
+peaks for the coordinate budget" as a previous version of this document
+suggested. Whether the true multi-diagram case (many diagrams, each
+contributing its own $t$-type peaks) is better handled by generalizing
+`pickin`/`orient`'s method (more coordinates, still unsplit) or by
+Byers–Yang/Byckling–Kajantie-style splitting into single-peak pieces is
+a real design choice the paper does not resolve in general — it resolves
+it only for this one diagram.
 
 **Correction — "number of pieces," "number of peaks," and "number of
 diagrams" are three different quantities, not one; an earlier draft of
@@ -785,32 +830,47 @@ things (how many topologies exist vs. how many distinct lines could
 appear across all of them), and nothing in this document establishes
 they track each other.
 
-**So, precisely, and now correctly scoped:** splitting is a direct
-answer to an algorithmic-cost problem, not a way of making that cost
-disappear — this much is not in question. What *is* still open is how
-many pieces a real calculation needs. Two candidate quantities have been
-raised, both real complexity concerns, but distinct and not shown to be
-the same order: (a) the number of potential peaks, $O(2^n)$ in the
-propagator-subset sense derived above (tree-only, itself only a lower
-bound on Vermaseren's claim); and (b) the number of *diagrams*
-contributing to the reaction, which — per the classical tree-topology
-count just derived — can grow considerably faster than $O(2^n)$. Whichever
-one a "piece" is naturally organized around (this document has not
-settled that, and it plausibly depends on the splitting strategy chosen),
-the mismatch against the linear $3n-4$ coordinate budget is real either
-way, since both (a) and (b) are super-linear in $n$. The lecture's own
-aside on p.3 is evidence for the diagram-count version specifically: for
-$e^-e^+\to e^-e^+\mu^-\mu^+$ at low energy there are 12 diagrams, and at
-that count the amplitude-squaring method (evaluate the complex amplitude
-once, square it, cost linear in diagram count) is already preferred over
-generating a dedicated phase-space configuration per diagram — a direct,
-explicit acknowledgment that per-diagram splitting has a cost that scales
-with the diagram count specifically, which is what motivates this
-example, not the propagator-subset count.
+**So, precisely, and now settled by the primary source rather than left
+open:** splitting is a direct answer to an algorithmic-cost problem, not
+a way of making that cost disappear. Vermaseren's paper (p.349, quoted
+above) settles which of the two candidate quantities a "piece" is
+organized around: **pieces are peak-organized, one peak per piece** —
+"split the phase space up into various pieces such that each piece
+contains a single peak," in the paper's own words — not diagram-organized.
+So of the two counts distinguished above, (a) the number of potential
+peaks (the tree-restricted $O(2^n)$ propagator-subset count, itself only
+a lower bound on Vermaseren's unrestricted claim) is the one that
+directly governs the number of pieces the *splitting* method (event
+generation of the second kind) would need in the worst case; (b) the
+number of diagrams is a related but separate driver of cost, relevant
+because more diagrams generally means more potential peaks to organize
+into pieces (each diagram contributes its own propagators to the menu),
+and separately relevant to the *amplitude-vs-diagram-sum* tradeoff below
+— but it is not itself "the number of pieces." The lecture's own aside on
+p.3 (12 diagrams for $e^-e^+\to e^-e^+\mu^-\mu^+$, amplitude-squaring
+preferred at that count) is evidence for a related but distinct
+tradeoff — diagram count driving the cost of summing diagrams
+*algebraically* before or after squaring — not direct evidence for how
+many single-peak pieces a phase-space split would need for that
+reaction; that would require knowing how many distinct peaks (in
+Vermaseren's sense) those 12 diagrams' propagators produce, which this
+document has not attempted to enumerate.
 
-**A concrete instance of "dedicated configuration" in the archive, not
-just asserted from the paper's prose:** `mgoto2.c` is a generic two-body
-decay routine, and its own doc comment (`mgoto2.c:8-9`) states plainly:
+**A concrete instance in the archive of a *third* technique, not the
+same as either of Vermaseren's two named methods — correcting an earlier
+mislabeling.** An earlier version of this section called the `mgoto2`/
+`gamgam` rotate-align-rotate-back trick (below) an instance of "dedicated
+configuration" in the splitting sense. Having now read the paper's
+precise two-method taxonomy above, that label doesn't fit either method:
+it isn't splitting phase space into single-peak pieces (method one), and
+it isn't rewriting the integral so a propagator denominator becomes the
+integration variable directly (method two, what `pickin`/`orient` does).
+It is a third, simpler technique — a coordinate transformation
+(rotate/boost) applied *before* calling an otherwise-generic sampling
+routine, so that routine's already-known blind spot lines up with the
+physically relevant peak direction for this specific reaction. `mgoto2.c`
+is a generic two-body decay routine, and its own doc comment
+(`mgoto2.c:8-9`) states plainly:
 
 ```c
 /*
@@ -818,36 +878,36 @@ decay routine, and its own doc comment (`mgoto2.c:8-9`) states plainly:
     special peaking behaviour near ct = +-1.
 ```
 
-i.e. `mgoto2` is *not* a dedicated map for the peak that can occur at
-$\cos\theta=\pm1$ — it is a general-purpose piece, left unmapped for that
-specific danger. The lecture's own text (p.2) describes the fix for
-exactly this gap for the muon-pair case: the `gamgam` routine "rotate[s]
-the m4 system first to align the photons along the z-axis, then do[es]
-the two body decay and then rotate[s] and boost[s] back" — a
-purpose-built change of coordinates so that `mgoto2`'s known blind spot
-(peaking near $ct=\pm1$) lines up with the *physical* peaking direction
-(incoming virtual photons along the beam) before sampling, rather than
-trying to build one universal map that handles both the generic 2-body
-kinematics and this reaction-specific peak at once. Neither `gamgam.c`
-nor `epmm.c` ship in `kinc.tar.gz`/`kinc1.tar.gz`/`kinc2.tar.gz` (checked
-directly — absent from all three archives), so this is corroborating,
-not directly-observed, evidence: `mgoto2.c`'s own docstring is the
+i.e. `mgoto2` is *not* itself built to handle any particular peak
+direction — it is a general-purpose routine, left unmapped for the
+$\cos\theta=\pm1$ danger. The lecture's own text (p.2) describes the fix
+for the muon-pair case: the `gamgam` routine "rotate[s] the m4 system
+first to align the photons along the z-axis, then do[es] the two body
+decay and then rotate[s] and boost[s] back" — i.e. rotate the physically
+relevant peak direction (incoming virtual photons) onto the coordinate
+axis `mgoto2` already knows how to handle ($\cos\theta=\pm1$), sample,
+then rotate/boost back. Neither `gamgam.c` nor `epmm.c` ship in
+`kinc.tar.gz`/`kinc1.tar.gz`/`kinc2.tar.gz` (checked directly — absent
+from all three archives), so this remains corroborating, not
+directly-observed, evidence: `mgoto2.c`'s own docstring is the
 first-hand code evidence; the rotate-align-rotate-back mechanism itself
 is reported only in the lecture prose, not verified against a routine we
 can read.
 
 **One thing this is *not*:** `pickin.c`'s `option` parameter (Topic 2's
-code citations, `pickin.c:24-31`) is *not* an instance of this
-splitting/dedicated-configuration idea, even though it superficially
-looks similar (a parameter that changes which mapping function runs). It
-only changes the *order* of integration ($s_2,t_1,t_2$ vs.
-$t_1,s_2,t_2$ vs. $t_1,t_2,s_2$) and which map ($ds_2/s_2$ vs. a
-$\lambda$-function map) is used for $s_2$, always for the *same* single
-double-t-channel diagram. It tunes one piece's own map; it does not
-select between different pieces/diagrams. Conflating the two would be the
-same error flagged earlier in this document (Correction #1, Topic 0) —
-inferring more from a superficial resemblance than the code actually
-supports.
+code citations, `pickin.c:24-31`) is *not* an instance of any of the
+three techniques above (splitting into single-peak pieces, the
+$\ln(-t)$-propagator-as-variable method, or the rotate-align-rotate-back
+trick), even though it superficially looks similar (a parameter that
+changes which mapping function runs). It only changes the *order* of
+integration ($s_2,t_1,t_2$ vs. $t_1,s_2,t_2$ vs. $t_1,t_2,s_2$) and which
+map ($ds_2/s_2$ vs. a $\lambda$-function map) is used for $s_2$, always
+for the *same* single double-t-channel diagram, within the one
+$\ln(-t)$-method calculation. It tunes one detail of that one method's
+own map; it does not select between different pieces, methods, or
+diagrams. Conflating the two would be the same error flagged earlier in
+this document (Correction #1, Topic 0) — inferring more from a
+superficial resemblance than the code actually supports.
 
 ### Worked example: our own diagram, $n=3$
 
