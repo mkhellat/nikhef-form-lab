@@ -137,7 +137,7 @@ Two fermion lines ($a_1\to a_2$ and $b_1\to b_2$) exchanging two photons,
 forming a closed rectangle — a standard one-loop QED box (two-photon
 exchange):
 
-![box diagram, one loop](figures/box_loop.svg)
+<img src="figures/box_loop.svg" alt="box diagram, one loop" width="600">
 
 (source: `figures/box_loop.tex`, a repo-native `tikz-feynman` diagram —
 originally sketched from a photo the user shared outside the repo, rebuilt
@@ -189,7 +189,7 @@ here is a diagram with the *same* vertex count as the box above ($V=4$)
 that is nonetheless a tree, because its 3 internal lines form a **chain**,
 not a cycle:
 
-![4-vertex chain tree diagram](figures/chain4.svg)
+<img src="figures/chain4.svg" alt="4-vertex chain tree diagram" width="750">
 
 (source: `figures/chain4.tex`, `tikz-feynman`.) Process: $\gamma + e^- \to e^- + \gamma +
 \gamma + \gamma$ — an incoming photon Compton-scatters off an electron,
@@ -676,7 +676,7 @@ claim used in Topic 1's subset-counting argument. $\blacksquare$
 
 ### Diagram
 
-![multiperipheral tree with q1, q2 momentum-cut demonstration](figures/multiperipheral.svg)
+<img src="figures/multiperipheral.svg" alt="multiperipheral tree with q1, q2 momentum-cut demonstration" width="430">
 
 (source: `figures/multiperipheral.tex`, `tikz-feynman`, standard
 straight-fermion/wavy-photon drawing convention.) This is the same
