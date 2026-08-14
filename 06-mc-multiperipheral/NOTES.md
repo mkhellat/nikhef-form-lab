@@ -29,6 +29,12 @@ enough ground is covered.
 - [Topic 4: why the pseudoscalar ($\pi^0$) coupling is the cleanest worked example](notes/topic4-pseudoscalar-coupling.md)
   — why Vermaseren introduces the numerical-stability method via
   $e^-e^+\to e^-e^+\pi^0$ rather than the scalar or QED muon-pair case.
+- [Topic 5: what "would grow with powers of $s$" actually refers to in formula (3.2)](notes/topic5-s-scaling-pi0.md)
+  — why $s$-growth at fixed $t_1,t_2$ would violate unitarity, the
+  analytic $s^2$ derivation of the dominant Gram-determinant term, and
+  its numerical confirmation directly against `pickin`/`orient`/`pi0`
+  (no cancellation between `part1..part4`, correcting an earlier
+  assumption in Topic 4).
 
 ## Open questions not yet filed into a topic
 
