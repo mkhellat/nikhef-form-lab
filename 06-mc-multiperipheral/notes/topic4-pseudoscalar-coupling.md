@@ -117,6 +117,11 @@ products, no cancellations occur" cleanly, on the simplest possible
 example, before tackling the case where it's actually needed to solve a
 real numerical problem.
 
+See [Topic 5](topic5-s-scaling-pi0.md) for the follow-up question this
+raises: "no cancellation between `part1..part4`" does not by itself mean
+the sum is well-behaved in $s$ — checked directly, the sum grows like
+$s^2$ at fixed small $t_1,t_2$, exactly as much as `part1` alone.
+
 ### Open threads / not yet resolved
 
 - We have not read the paper's actual derivation of the muon-pair matrix
