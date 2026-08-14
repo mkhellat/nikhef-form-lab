@@ -8,14 +8,22 @@ t-channel) diagrams, following uam19 part 5 and
 Motivating reactions: $e^- e^+ \to e^- e^+ \pi^0$, generalizing to
 $e^- e^+ \to e^- e^+ \mu^- \mu^+$ (two-photon physics).
 
-This directory is still in the documentation/discussion phase — no
-implementation code yet. [`NOTES.md`](NOTES.md) is an index into the full
-discussion, split by topic under [`notes/`](notes/); every claim there is
-anchored to quoted, line-numbered code from `kinc2.tar.gz` (`pickin.c`,
-`orient.c`, `eepi.c`, `pi0.c`, `mgoto2.c`) and, where relevant, to the
-primary sources the lecture cites (Vermaseren 1983; Byckling & Kajantie,
-*Particle Kinematics*, 1973; Byers & Yang, *Rev. Mod. Phys.* 36 (1964)
-595). This file summarizes the conclusions settled so far.
+This directory is still in the documentation/discussion phase for the
+double-t-channel phase space itself — no standalone event generator has
+been written yet. What it does contain: [`NOTES.md`](NOTES.md), an index
+into the full discussion split by topic under [`notes/`](notes/), with
+every claim anchored to quoted, line-numbered code from `kinc2.tar.gz`
+(`pickin.c`, `orient.c`, `eepi.c`, `pi0.c`, `mgoto2.c`) and, where
+relevant, to the primary sources the lecture cites (Vermaseren 1983;
+Byckling & Kajantie, *Particle Kinematics*, 1973; Byers & Yang,
+*Rev. Mod. Phys.* 36 (1964) 595); [`scripts/`](scripts/), standalone
+Python checks of specific combinatorial/graph-theoretic claims;
+[`kinc2/`](kinc2/), the subset of the vendored reference implementation
+needed to build the one non-Python check so far,
+[`kinc2-driver/scan_pi0_scaling.c`](kinc2-driver/scan_pi0_scaling.c), a
+driver that instruments the real `pickin`/`orient`/`pi0` code directly
+(see Topic 5 below). This file summarizes the conclusions settled so
+far.
 
 ### Tree diagrams and loops, defined rigorously
 
@@ -135,6 +143,34 @@ $\gamma^*\gamma^*\to\mu^+\mu^-$ — needs two diagrams that are gauge
 invariant only jointly, which is the actual source of the severe numerical
 cancellations the whole paper exists to solve. See
 [`notes/topic4-pseudoscalar-coupling.md`](notes/topic4-pseudoscalar-coupling.md).
+
+### Why "grows with powers of $s$" is a catastrophe, and where it doesn't cancel
+
+The lecture note warns that formula (3.2)'s first term, combined with
+$1/(t_1t_2)^2$, "would give a crosssection that grows with powers of
+$s$" — this is a unitarity statement: the near-real-photon corner
+($t_1,t_2\to0$) is the equivalent-photon-approximation regime, where the
+process factorizes into a photon flux times the fixed,
+$s$-independent $\sigma(\gamma\gamma\to\pi^0)$; a term surviving with
+power-law $s$-growth there would contradict that factorization. **This
+does not happen via cancellation between `pi0.c`'s four terms.** An
+earlier draft of Topic 4 assumed it did; checked directly (both
+analytically,
+[`scripts/gram_s_scaling.py`](scripts/gram_s_scaling.py), which derives
+$\varepsilon^{p_1q_1p_2q_2}\varepsilon_{p_1q_1p_2q_2}\sim s^2t_1t_2$ at
+fixed $t_1,t_2$, and numerically, against the real `pickin`/`orient`/`pi0`
+code,
+[`kinc2-driver/scan_pi0_scaling.c`](kinc2-driver/scan_pi0_scaling.c)) it
+is now confirmed the sum `part1+part2+part3+part4` genuinely grows like
+$s^2$ at fixed small $t_1,t_2$, tracking `part1` with no cancellation —
+exactly matching the paper's own statement (p.353) that "all 4 terms are
+positive so no cancellations occur." The "decent, $1/(t_1t_2)$" behavior
+the lecture note promises is a property of the full cross-section
+(matrix element $\times$ phase-space Jacobian $\times$ the $s$-dependent
+coupling between $t_1,t_2$'s allowed range and $s$ at the phase-space
+boundary), not of `pi0.c`'s bare squared-matrix-element output taken
+alone. See
+[`notes/topic5-s-scaling-pi0.md`](notes/topic5-s-scaling-pi0.md).
 
 ### Figures
 
