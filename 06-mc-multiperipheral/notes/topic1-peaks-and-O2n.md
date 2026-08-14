@@ -557,6 +557,65 @@ Byers–Yang for "solving phase space this way" refers specifically to the
 invariant-variable/Jacobian formulation, not to the peak-counting
 argument this document has been trying to trace to a citation.
 
+**Where $\Delta_4$ and the Jacobian actually come from — Vermaseren's
+Appendix A, formulas (A.1)-(A.3).** The paragraph above cites `pickin.c`'s
+header comment and Byers-Yang's Theorem 13 for the origin of using
+$\Delta_4$ as an integration variable, but had not quoted the specific
+formulas `pickin.c` implements. uam19 `part5.pdf` names them directly:
+*"Let us start with looking at the formulas A.1 and A.2. A.1 is the basic
+formula..."* — these are in Appendix A of Vermaseren 1983 (p.360-361), not
+in the lecture notes themselves. The two forms of the reformulated
+$2\to3$ phase-space integral are:
+
+$$\text{(A.1)}\qquad d\Phi = \frac{\pi}{16\,\lambda^{1/2}(s,m_1^2,m_2^2)}
+\int\frac{ds_1\,ds_2\,dt_1\,dt_2}{\sqrt{-\Delta_4(p_1,p_2,p_3,p_4)}}$$
+
+$$\text{(A.2)}\qquad d\Phi = \frac{\pi}{4\,\lambda^{1/2}(s,m_1^2,m_2^2)}
+\int\frac{d\Delta\,ds_2\,dt_1\,dt_2}{(s_2+q-m_2^2)\sqrt{-\Delta_4(p_1,p_2,p_3,p_4)}}$$
+
+(A.2) trades $s_1$ for the paper's "more exotic variable"
+$\Delta\equiv p_1\!\cdot\!p_2\,q_1\!\cdot\!q_2-p_1\!\cdot\!q_2\,p_2\!\cdot\!q_1$
+— this is exactly `levi.delta`, computed at `pickin.c:184`
+(`levi.delta = delb-yy4*st*sqrt(dd)/(2*ap);`) and used at `pickin.c:185`
+to obtain `extra.s1` from it, i.e. `pickin.c` actually integrates in the
+(A.2) variable set ($\Delta,s_2,t_1,t_2$), then converts to $s_1$
+algebraically rather than the other way around — consistent with the
+paper's own framing of $\Delta$ as the numerically preferable choice.
+Formula (A.3), immediately following, identifies $\Delta_4$ explicitly as
+a Gram determinant and ties it to the Levi-Civita form used throughout
+this document and [Topic 5](topic5-s-scaling-pi0.md):
+
+$$\text{(A.3)}\qquad \Delta_4\equiv\varepsilon^{p_1p_2p_3p_4}\varepsilon_{p_1p_2p_3p_4}
+=\varepsilon^{p_1q_1p_2q_2}\varepsilon_{p_1q_1p_2q_2}$$
+
+— i.e. `pi0.c`'s `part1` numerator (`levi.gram`, formula (3.2)'s first
+term, [Topic 5](topic5-s-scaling-pi0.md)'s subject) and `pickin.c`'s
+phase-space Jacobian denominator (`orient.c`'s $1/\sqrt{-\Delta_4}$,
+cited above as the canonical example of a Jacobian peak) are **the same
+quantity**, $\Delta_4$, appearing in two different roles: as the
+numerator of the matrix element's dominant term, and as the (inverse
+square root of the) phase-space measure. This is not a coincidence
+Vermaseren's paper treats as incidental — formula A.11
+($D_1=\varepsilon^{p_1p_2q_2\mu}\varepsilon_{p_1p_2q_2\mu}$, p.361) notes
+explicitly that $D_1$ (one of the boundary quantities `pickin.c` computes,
+`levi.dd1`) "is a minor of the Gram determinant," the same
+minor-of-a-determinant relationship formula (3.2)'s p.353 commentary uses
+for `part2`/`part3` relative to `part1` (see [Topic
+4](topic4-pseudoscalar-coupling.md)). Formulas (A.4)-(A.13), which follow
+(A.3) in the paper, derive the $t_1,t_2,s_2$ boundary expressions
+`pickin.c` implements almost line-for-line (e.g. `pickin.c:90-92`'s
+`t1max`/`t1min` match (A.4)/(A.5)'s structure: a symmetric max expression
+built from two $\lambda^{1/2}$ factors, and a numerically-stable min
+expression built as a ratio to avoid the cancellation `pickin.c`'s own
+header comment warns about). Working through the full correspondence
+line-by-line for every boundary formula is not done here — flagged as an
+open thread below — but the identification of (A.1)-(A.3) as the actual
+source formulas, previously missing from this document despite citing
+their consequences ($\Delta_4$, the Jacobian, `levi.delta`) repeatedly,
+closes a real gap: earlier passages here referenced "the Gram determinant
+$\Delta_4$" as if its definition were self-evident, without ever quoting
+where in the primary source it is defined or how it is derived.
+
 **Correction — "number of pieces," "number of peaks," and "number of
 diagrams" are three different quantities, not one; an earlier draft of
 this paragraph conflated them.** It claimed in one breath that the
