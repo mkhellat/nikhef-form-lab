@@ -150,17 +150,74 @@ is a property of the full cross-section (matrix element times phase-space
 Jacobian times whatever additional $s,t_1,t_2$ structure survives
 integration), not of `pi0.c`'s bare output taken alone.
 
+### The Jacobian/boundary mechanism, partially resolved
+
+The obvious first guess — that the accessible $t_1,t_2$ range shrinks as
+$s\to\infty$, squeezing out the growing region — is **wrong** in this
+process. Checked directly (massless $e^-/e^+$ beams, $m_1=m_2=m_3=0$):
+`pickin.c`'s own $t_{1\max}$ formula (`pickin.c:90`) simplifies exactly to
+$t_{1\max}=\sigma_1-s\to -s$, and $t_{1\min}=0$ identically in this mass
+limit (both confirmed against the running code, not just algebra). So the
+kinematically allowed range is $t_1\in[-s,0]$ — it **grows** with $s$, it
+does not shrink; the near-real-photon corner ($t_1\to0^-$) remains
+accessible at every $s$, at all energies, exactly where `part1`'s $s^2$
+growth lives.
+
+So the resolution has to come from the *integral*, not the boundary
+alone: the true cross section is $\sigma\propto\int dj\,|\mathcal M|^2$
+over the full $s$-dependent phase space (`kinc2/eee.c`'s driver,
+`eepi.c`, computes exactly `overallconstant * dj * pi0(0)` per phase-space
+point — read directly from the un-vendored reference archive, not
+guessed), where `eee.c` shows `overallconstant` carries an explicit
+$1/(2s)$ flux factor (the standard 2-body-flux normalization) on top of
+$s$-independent couplings.
+[`kinc2-driver/mc_xsec_s_scan.c`](../kinc2-driver/mc_xsec_s_scan.c) Monte
+Carlo-integrates $dj\times\text{pi0}(0)$ over the full unit hypercube (no
+importance sampling — a crude, unbiased estimate, not a precision VEGAS
+run) at several $\sqrt s$, then applies that same $1/(2s)$ factor:
+
+```
+   sqrt(s)          raw_avg     raw_avg/(2s)
+         1     1.093544e+04     5.467718e+03
+         3     2.671909e+05     1.484394e+04
+        10     6.345207e+06     3.172604e+04
+        30     9.747381e+07     5.415212e+04
+       100     1.752242e+09     8.761212e+04
+```
+
+The raw integral (before the flux factor) grows with a *decreasing*
+effective power of $s$ as $s$ increases (fit between consecutive points:
+$s^{1.45}\to s^{1.31}\to s^{1.24}\to s^{1.20}$), consistent with
+integrated growth closer to $s\log s$ than to `part1`'s bare $s^2$ — the
+phase-space integration measure and the boundary do suppress the growth
+substantially, as the lecture claims. But after dividing by the $1/(2s)$
+flux factor, the result **still grows** — roughly $\times16$ from
+$\sqrt s=1$ to $\sqrt s=100$ — rather than flattening to a constant. This
+is a genuine, only partially resolved result, not a derivation error to
+paper over: the *unrestricted*, full-$4\pi$ acceptance integral computed
+here plausibly diverges logarithmically as $\sqrt s\to\infty$ (a known
+feature of equivalent-photon-type cross sections when integrated over
+photon virtuality all the way down to the exactly-real-photon point,
+regularized physically by the electron mass rather than by any dynamics
+in $\pi^0\gamma\gamma$ coupling) — but that asymptotic log-law has not
+been derived analytically here, only observed numerically over a modest
+range of $s$ with a statistically noisy MC estimate. A real experiment's
+cross section is finite because detector acceptance always imposes a
+nonzero minimum scattering angle (equivalently, a nonzero minimum
+$|t_1|,|t_2|$), which directly excludes the region `part1`'s $s^2$ growth
+comes from; that acceptance-cut version of the cross section was not
+computed here.
+
 ### Open threads / not yet resolved
 
-- The exact mechanism by which `pickin.c`'s Jacobian $dj$ and the
-  $s$-dependent phase-space boundary combine with `pi0.c`'s $s^2$-growing
-  numerator to produce a finite, non-power-growing physical cross-section
-  has not been derived or checked numerically here — only the matrix
-  element's own scaling has been isolated and confirmed.
-- The "very bad cancellations between the various terms" that the passage
-  warns about, if one naively contracted the Levi-Civita tensors into dot
-  products, has not been checked directly (i.e. actually performing that
-  dot-product expansion symbolically and confirming a large cancellation
-  within it) — only inferred from `pickin.c`'s use of the stable factored
-  form `levi.gram = (1-yy4^2)*dd/ap` (`pickin.c:188`), which structurally
-  avoids ever forming that expansion.
+- The exact asymptotic power-or-log law of the fully-inclusive (uncut)
+  integrated cross section as $\sqrt s\to\infty$ has not been derived
+  analytically — only estimated numerically over $\sqrt s=1$–$100\,$GeV
+  via a crude, unimportance-sampled Monte Carlo integral, which is too
+  noisy and too narrow a range to distinguish a slow power law from a
+  logarithm with confidence.
+- The finite, $t_1,t_2$-acceptance-cut cross section (the physically
+  realistic quantity any real detector measures) was not computed —
+  doing so and checking that IT is flat/decreasing in $s$ (unlike the
+  uncut integral above) would be the more direct confirmation of the
+  lecture's "decent cross section" claim.
