@@ -218,6 +218,66 @@ raises: "no cancellation between `part1..part4`" does not by itself mean
 the sum is well-behaved in $s$ — checked directly, the sum grows like
 $s^2$ at fixed small $t_1,t_2$, exactly as much as `part1` alone.
 
+### Step 3, verified: `part2..part4` really are principal minors
+
+Step 3's claim was checked directly, both algebraically and numerically,
+rather than left as an analogy.
+
+**Algebraically** ([`scripts/gram_minors_pi0.py`](../scripts/gram_minors_pi0.py)):
+the standard identity for contracting one index of two 4D Levi-Civita
+tensors with the metric collapses the product into a determinant of dot
+products — a cofactor expansion. Building the $4\times4$ Gram matrix of
+$(p_1,q_1,p_2,q_2)$ symbolically (massless $e^-,e^+$ beams, so
+$p_1^2=p_2^2=0$) and taking its principal minors gives exactly:
+
+- drop $p_1$'s row/column $\to$ the $3\times3$ minor
+  $\det\text{Gram}(q_1,p_2,q_2) = -p_2q_2^2\,t_1 + 2\,p_2q_2\,q_1p_2\,q_1q_2 - q_1p_2^2\,t_2$
+  (`part2`'s quantity),
+- drop $p_2$'s row/column $\to$ $\det\text{Gram}(p_1,q_1,q_2) =
+  -p_1q_1^2\,t_2 + 2\,p_1q_1\,p_1q_2\,q_1q_2 - p_1q_2^2\,t_1$ (`part3`'s
+  quantity),
+- drop both $p_1$'s and $p_2$'s rows/columns $\to$ $\det\text{Gram}(q_1,q_2)
+  = t_1t_2 - (q_1{\cdot}q_2)^2$ — exactly `pi0.c`'s `la` term, verified by
+  a direct `assert` in the script.
+
+**Numerically**, against the real code
+([`kinc2-driver/check_gram_minors.c`](../kinc2-driver/check_gram_minors.c)):
+reconstructing these minors from `pickin.c`'s own stored raw dot products
+(`dotp.p12`, `dotp.p13`, ..., `dotp.p2k1`) and comparing to
+`levi.gram`/`levi.dd2`/`levi.dd4` at several on-shell kinematic points
+confirms the identity holds — at "ordinary" points (not extremely close
+to the near-real-photon corner) the naive minors agree with `pickin.c`'s
+stable quantities to within $0.1$–$0.4\%$:
+
+```
+s=20       t1=-1.9752e-05   t2=-3.5272e-05
+  part1: naive_gram4=-6.54355e-08    levi.gram=-6.55185e-08    ratio=0.998733
+  part2: naive_minor=3.13884e-06     levi.dd2 =3.14026e-06     ratio=0.999546
+  part3: naive_minor=1.74156e-06     levi.dd4 =1.74298e-06     ratio=0.999186
+```
+
+**But at a genuinely near-real-photon point** ($t_1\sim10^{-11}$), the
+naive `part3` minor's three additive terms
+($-p_1q_1^2t_2$, $+2p_1q_1\,p_1q_2\,q_1q_2$, $-p_1q_2^2t_1$) are
+individually $O(10^{-8})$ while their sum, and `pickin.c`'s stable
+`levi.dd4`, are both $O(10^{-9})$ — the naive route gives an answer
+**29 times too large and with the wrong sign**:
+
+```
+s=20       t1=-6.8096e-11   t2=-0.012767
+  part3: term1=8.70702e-16   term2=-3.37331e-08  term3=1.1829e-09
+         naive_minor=-3.25502e-08    levi.dd4=1.11581e-09    ratio=-29.171915
+```
+
+This is a direct, concrete instance of exactly the "very bad
+cancellations between the various terms" the uam19 lecture warns about —
+resolving [Topic 5](topic5-s-scaling-pi0.md)'s second open thread as
+well: the cancellation is real, it happens *inside* the naive
+dot-product expansion of a single minor (not between `part1..part4`
+themselves), and `pickin.c` avoids it entirely by never forming that
+expansion, computing `levi.dd2`/`dd4` instead from a numerically stable
+boundary-root factorization.
+
 ### Open threads / not yet resolved
 
 - We have not read the paper's actual derivation of the muon-pair matrix
@@ -230,8 +290,3 @@ $s^2$ at fixed small $t_1,t_2$, exactly as much as `part1` alone.
   derived here — we have not checked why those particular extra terms
   happen to be numerically benign, only noted that they exist (unlike the
   pseudoscalar case, where no such extra terms exist at all).
-- Step 3's claim that `part2..part4` are principal minors of `part1`'s
-  Gram matrix is stated by direct analogy to Appendix A's $D_1$ identity
-  (formula A.11) and the paper's own p.353 remark, but has not been
-  verified by explicitly computing the minors symbolically and comparing
-  to `levi.dd2`/`levi.dd4`/the $\lambda$ term in `pickin.c`.
