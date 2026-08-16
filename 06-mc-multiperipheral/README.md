@@ -164,13 +164,38 @@ code,
 is now confirmed the sum `part1+part2+part3+part4` genuinely grows like
 $s^2$ at fixed small $t_1,t_2$, tracking `part1` with no cancellation —
 exactly matching the paper's own statement (p.353) that "all 4 terms are
-positive so no cancellations occur." The "decent, $1/(t_1t_2)$" behavior
-the lecture note promises is a property of the full cross-section
-(matrix element $\times$ phase-space Jacobian $\times$ the $s$-dependent
-coupling between $t_1,t_2$'s allowed range and $s$ at the phase-space
-boundary), not of `pi0.c`'s bare squared-matrix-element output taken
-alone. See
-[`notes/topic5-s-scaling-pi0.md`](notes/topic5-s-scaling-pi0.md).
+positive so no cancellations occur." Separately confirmed (Topic 4): the
+paper's claim that `part2..part4` are principal minors of `part1`'s
+$4\times4$ Gram determinant holds exactly, both symbolically
+([`scripts/gram_minors_pi0.py`](scripts/gram_minors_pi0.py)) and against
+the real code
+([`kinc2-driver/check_gram_minors.c`](kinc2-driver/check_gram_minors.c))
+— and reconstructing those minors the *naive* way, via raw dot products
+instead of `pickin.c`'s stable factored form, reproduces the lecture's
+warned-about catastrophic cancellation directly (a factor of 29 off, wrong
+sign, at a near-real-photon point).
+
+The "decent, $1/(t_1t_2)$" behavior the lecture note promises turned out
+**not** to come from the accessible $t_1,t_2$ range shrinking with $s$ —
+checked directly, `pickin.c`'s own $t_{1\max}$ formula gives
+$t_{1\max}\to-s$ as $s\to\infty$ (the range *grows*, it doesn't shrink).
+The real cross-section is the phase-space *integral* $\int
+dj\,|\mathcal M|^2$ (matrix element $\times$ Jacobian, per `eee.c`'s own
+`overallconstant*dj*pi0(0)` integrand). A Monte Carlo scan of that
+integral
+([`kinc2-driver/mc_xsec_s_scan.c`](kinc2-driver/mc_xsec_s_scan.c)) shows
+the raw integral grows with a *decreasing* effective power of $s$
+(from $\sim s^{1.45}$ down toward $\sim s^{1.2}$ as $s$ increases) —
+substantially tamer than `part1`'s bare $s^2$ — but after applying
+`eee.c`'s $1/(2s)$ flux factor, the result still grows over the range
+tested rather than flattening; this is left as a genuinely open,
+only-partially-resolved numerical result (plausibly a slow, log-type
+divergence of the *fully inclusive, uncut* cross section, tamed in any
+real experiment by a nonzero minimum scattering-angle acceptance that
+excludes the near-real-photon corner — not yet derived analytically or
+computed with an acceptance cut here). See
+[`notes/topic5-s-scaling-pi0.md`](notes/topic5-s-scaling-pi0.md) and
+[`notes/topic4-pseudoscalar-coupling.md`](notes/topic4-pseudoscalar-coupling.md).
 
 ### Figures
 
