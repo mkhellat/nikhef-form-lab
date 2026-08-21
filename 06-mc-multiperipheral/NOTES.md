@@ -35,6 +35,12 @@ enough ground is covered.
   its numerical confirmation directly against `pickin`/`orient`/`pi0`
   (no cancellation between `part1..part4`, correcting an earlier
   assumption in Topic 4).
+- [Topic 6: the muon-pair "super formulae" for $\gamma^*\gamma^*\to\mu^+\mu^-$](notes/topic6-muon-pair-super-formulae.md)
+  — the harder, two-diagram case Vermaseren's method actually exists for,
+  from a separate 1982 paper (`twophoton.pdf`); walks formula (III.3)
+  through (III.11) via Appendix C's Schouten-identity reductions; no
+  vendored driver exists for this reaction, so verification here is
+  symbolic only (and caught one incorrect claim in an earlier draft).
 
 ## Open questions not yet filed into a topic
 
