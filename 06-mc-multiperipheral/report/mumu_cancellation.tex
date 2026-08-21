@@ -1,0 +1,168 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz-feynman}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{slashed}
+\usepackage{booktabs}
+
+\newcommand{\slashedp}[1]{\slashed{#1}}
+
+\title{Reproducing Vermaseren's numerical-instability claim for\\
+$\gamma^*\gamma^*\to\mu^+\mu^-$}
+\author{nikhef-form-lab, Part 5 (\texttt{06-mc-multiperipheral})}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+J.A.M.\ Vermaseren's \emph{Two Photon Processes at Very High Energies}
+(NIKHEF-H/82-15, 1982) states, discussing the reaction
+$e^+e^-\to e^+e^-\mu^+\mu^-$ at PETRA/LEP energies: ``If the matrix element
+were to be completely evaluated in the standard fashion -- i.e.\ expressing
+it completely in terms of 4-vector products and then substituting their
+numerical values for each Monte Carlo generated point in phase space --
+then the cancellations between the various terms would be so bad that even
+the 60 bit accuracy of a CDC computer would not suffice.'' This report
+reproduces that claim end to end for the two-photon subprocess
+$\gamma^*\gamma^*\to\mu^+\mu^-$: deriving the squared matrix element by hand
+via the naive (``standard fashion'') route and via Vermaseren's
+Schouten-identity-stabilized route, cross-checking both derivations
+symbolically, and then evaluating both forms numerically in IEEE double
+precision at kinematic points approaching the multiperipheral peak
+($t_1,t_2\to0$) to measure directly how many significant digits are lost
+in the naive route.
+\end{abstract}
+
+\tableofcontents
+
+\section{The process and the two diagrams}
+\label{sec:diagrams}
+
+We study the subprocess $\gamma^*(q_1)\,\gamma^*(q_2)\to\mu^-(p_6)\,\mu^+(p_7)$,
+following Vermaseren's Fig.~3 labeling (reproduced in
+Figures~\ref{fig:diagram-k1}--\ref{fig:diagram-k2}). This is the
+matrix-element core of the full $e^+e^-\to e^+e^-\mu^+\mu^-$ two-photon
+process (Fig.~1 of the same paper): the electron and positron each radiate
+a virtual photon ($q_1$, $q_2$), which then fuse via muon exchange into the
+$\mu^+\mu^-$ pair. The electron/positron lines and the two photon
+propagators $1/q_1^2,\,1/q_2^2$ are common to both diagrams and are not the
+source of the numerical instability discussed here; the instability lives
+entirely in the $\gamma^*\gamma^*\to\mu^+\mu^-$ subprocess itself, so we
+isolate it.
+
+There are exactly two tree diagrams, differing by which photon attaches to
+the muon line first:
+
+\begin{itemize}
+  \item \textbf{Diagram $k_1$}: photon $q_1$ attaches first; the internal
+    muon propagator carries momentum $k_1 = p_6-q_1 = q_2-p_7$.
+  \item \textbf{Diagram $k_2$} (crossed): photon $q_2$ attaches first;
+    the internal muon propagator carries momentum $k_2 = p_6-q_2 = q_1-p_7$.
+\end{itemize}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.45\textwidth]{figures/mumu_diagram_k1}
+  \caption{Diagram $k_1$: $q_1$ attaches to the muon line first.}
+  \label{fig:diagram-k1}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.45\textwidth]{figures/mumu_diagram_k2}
+  \caption{Diagram $k_2$ (crossed): $q_2$ attaches to the muon line first.}
+  \label{fig:diagram-k2}
+\end{figure}
+
+\subsection{Kinematic conventions}
+
+On-shell conditions: $p_6^2=p_7^2=m^2$ (muon mass), while the photons are
+virtual with $q_1^2=t_1$, $q_2^2=t_2$ (generally $t_1,t_2\neq0$, since these
+are internal propagators of the full process, not real external photons).
+Momentum conservation at the $\gamma^*\gamma^*$ vertex reads
+$q_1+q_2=p_6+p_7\equiv Q$. We will also use $k_1^2=(p_6-q_1)^2$ and
+$k_2^2=(p_6-q_2)^2$, with propagator denominators
+$D_1\equiv k_1^2-m^2$, $D_2\equiv k_2^2-m^2$.
+
+The ``multiperipheral peak'' regime the paper's warning is about is
+$t_1,t_2\to0$ (both photons nearly on-shell/real) at fixed, large $Q^2=s$
+-- the same corner of phase space studied numerically for the $\pi^0$ case
+in Topic 5.
+
+\section{Feynman rules and the amplitude}
+\label{sec:feynman-rules}
+
+Using standard QED Feynman rules (photon-fermion vertex $-ie\gamma^\mu$,
+fermion propagator $i(\slashed k+m)/(k^2-m^2)$):
+
+\begin{align}
+  \mathcal M_1 &= (-ie)^2\,\bar u(p_6)\,(-i\slashed e_1)\,
+    \frac{i(\slashed k_1+m)}{D_1}\,(-i\slashed e_2)\,v(p_7)
+    \label{eq:M1} \\
+  \mathcal M_2 &= (-ie)^2\,\bar u(p_6)\,(-i\slashed e_2)\,
+    \frac{i(\slashed k_2+m)}{D_2}\,(-i\slashed e_1)\,v(p_7)
+    \label{eq:M2}
+\end{align}
+
+Dropping the overall coupling and bookkeeping factors of $i$ into a common
+prefactor (matching Vermaseren's own convention, cf.\ formula (III.3) of
+\texttt{twophoton.pdf}), the total amplitude is
+
+\begin{equation}
+  \mathcal M \;\propto\; \bar u(p_6)\,N\,v(p_7), \qquad
+  N \equiv \slashed e_1\,\frac{\slashed k_1+m}{D_1}\,\slashed e_2
+    \;+\; \slashed e_2\,\frac{\slashed k_2+m}{D_2}\,\slashed e_1
+  \label{eq:N-def}
+\end{equation}
+
+This matches the left-hand side of formula (III.3) in \texttt{twophoton.pdf}
+exactly, confirming the starting point before proceeding to the trace
+algebra.
+
+\section{The naive (``standard fashion'') squared amplitude}
+\label{sec:naive}
+
+\emph{[To be filled in: full spin-summed trace
+  $\mathrm{Tr}[(\slashed p_6+m)\,N\,(\slashed p_7-m)\,\bar N]$, expanded
+  into its 16 cross terms, each reduced via the standard trace identities.
+  This is the ``expressing it completely in terms of 4-vector products''
+  route the paper's quoted paragraph describes.]}
+
+\section{Vermaseren's stable form}
+\label{sec:stable}
+
+\emph{[To be filled in: the Schouten-identity rewrite reproducing formula
+  (III.5)/(III.10)--(III.11), independently re-derived rather than quoted.]}
+
+\section{Symbolic cross-check}
+\label{sec:symbolic-check}
+
+\emph{[To be filled in: sympy verification that Sections~\ref{sec:naive}
+  and \ref{sec:stable} are algebraically identical at generic symbolic
+  kinematics.]}
+
+\section{Numerical demonstration of the cancellation}
+\label{sec:numerics}
+
+\emph{[To be filled in: double-precision evaluation of both forms at
+  kinematic points approaching $t_1,t_2\to0$, with explicit digit-loss
+  counts, following the same style as
+  \texttt{kinc2-driver/check\_gram\_minors.c} for the $\pi^0$ case.]}
+
+\section{Monte Carlo scan}
+\label{sec:mc}
+
+\emph{[To be filled in: fraction of randomly sampled phase-space points at
+  which the naive route loses catastrophic precision, as a function of
+  proximity to the multiperipheral peak.]}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+\emph{[To be filled in once Sections~\ref{sec:naive}--\ref{sec:mc} are
+  complete.]}
+
+\end{document}
