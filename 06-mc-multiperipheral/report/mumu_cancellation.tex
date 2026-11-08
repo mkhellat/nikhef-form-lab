@@ -527,15 +527,49 @@ This is the machine identity between Section~\ref{sec:naive} and the
 paper's stable \emph{subreaction} form. It is not yet a transcription of
 the electron-dressed $M_{ij}$ of~(III.11).
 
+\subsection{$M_{11}$ of (III.11) vs $W_1\otimes W_1$ dressing}
+\label{sec:M11-check}
+
+Formula~(III.11)/(3.11) starts with the Levi-Civita-free block
+\begin{equation}
+\begin{aligned}
+  M_{11}
+  &= 64\,q_1^2 q_2^2\Big\{
+       B\big[(Q{\cdot}q_1)^2 - q_1^2 q_2^2 + (q_1{\cdot}q_2)^2
+             - Q^2(q_1^2+q_2^2+2m^2)\big] \\
+  &\qquad\qquad
+       - 2(Q{\cdot}q_1)^2(q_1^2+2m^2)(q_2^2+2m^2)
+     \Big\},
+\end{aligned}
+\label{eq:M11}
+\end{equation}
+with $B=(q_1{\cdot}q_2)^2-(Q{\cdot}q_1)^2$ and $Q=p_6-p_7$. Script
+\texttt{scripts/mumu\_mij\_check.py} checks
+\begin{equation}
+  M_{11}/B^2
+  \;\equiv\;
+  S_{\mathrm{naive}}
+  \text{ contracted with }
+  L_{W_1}(q_1)\otimes L_{W_1}(q_2),
+\end{equation}
+where $L_{W_1}(q)=2q^2(g-qq/q^2)$ is the $W_1$ piece of~(3.8). Over 40
+random samples the relative error stays below $10^{-5}$.
+\begin{verbatim}
+python3 scripts/mumu_mij_check.py   # must print PASS: M11/B^2 ...
+\end{verbatim}
+This opens the electron-dressed~(III.11) layer at the pure-$W_1$ corner.
+$M_{12}$, $M_{21}$, $M_{22}$ (Levi-Civita + beam momenta $p_1,p_2$) are
+not claimed here.
+
 \subsection{What is not yet claimed}
 \label{sec:form-not-claimed}
 
-A term-by-term FORM proof that the expanded $M_{ij}$ of formula~(III.11)
-equal the electron-dressed naive sum still requires a faithful
-transcription of~(III.11) (and Appendix~C for $M_{12}$, $M_{21}$). The
-Ward identity and the naive$\equiv$(3.5) subreaction check above close the
-$\gamma^*\gamma^*\to\mu^+\mu^-$ layer; they do not yet close the full
-$e^+e^-\to e^+e^-\mu^+\mu^-$ $M_{ij}$ layer.
+A full term-by-term proof that $\sum_{ij}M_{ij}$ of~(III.11) equals the
+naive poly contracted with the complete point-particle tensors~(3.8)
+($W_1=W_2=1$) still needs faithful $M_{12}$, $M_{21}$, $M_{22}$ (Appendix~C).
+The Ward identity, naive$\equiv$(3.5), and $M_{11}\equiv W_1\otimes W_1$
+checks above close the $\gamma^*\gamma^*$ layer and the first $M_{ij}$
+corner; they do not yet close the full $e^+e^-$ $M_{ij}$ sum.
 
 \section{Numerical demonstration of the cancellation}
 \label{sec:numerics}
@@ -707,11 +741,12 @@ near $e_1=q_1$ (Section~\ref{sec:numerics}), and the Monte Carlo fraction
 of bad points tracks proximity to that Ward surface rather than photon
 virtuality alone (Section~\ref{sec:mc}).
 
-The $\gamma^*\gamma^*\to\mu^+\mu^-$ layer is closed:
-naive$\equiv$(3.5) (Section~\ref{sec:naive-eq-35}). What remains for the
-full $e^+e^-$ process is a faithful FORM transcription of~(III.11)
-(and Appendix~C for $M_{12}$, $M_{21}$). The gauge premise and the
-numeric damage of ignoring it are already machine-checked.
+The $\gamma^*\gamma^*\to\mu^+\mu^-$ layer is closed
+(naive$\equiv$(3.5), Section~\ref{sec:naive-eq-35}), and the first
+electron-dressed corner $M_{11}\equiv W_1\otimes W_1$ is checked
+(Section~\ref{sec:M11-check}). What remains is $M_{12}$, $M_{21}$,
+$M_{22}$ (Appendix~C). The gauge premise and the numeric damage of
+ignoring it are already machine-checked.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
