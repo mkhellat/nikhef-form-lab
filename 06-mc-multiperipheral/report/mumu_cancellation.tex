@@ -596,15 +596,97 @@ gauge / multiperipheral regime.
 \section{Monte Carlo scan}
 \label{sec:mc}
 
-\emph{[To be filled in: fraction of randomly sampled phase-space points at
-  which the naive route loses catastrophic precision, as a function of
-  proximity to the multiperipheral peak.]}
+Section~\ref{sec:numerics} showed digit loss along one near-gauge ray.
+This section asks the Monte Carlo question: over randomly sampled
+orientations, what \emph{fraction} of points is bad, and as a function of
+what proximity?
+
+\subsection{Setup}
+\label{sec:mc-setup}
+
+Driver: \texttt{numeric/mc\_digit\_loss.c}. Same poly header as
+Section~\ref{sec:numerics}. For each bin, draw $N=5000$ independent
+samples of the muon direction $(\theta,\phi)$ and transverse polarization
+angles; evaluate the poly in \texttt{double} and \texttt{long double};
+call a point \textbf{bad} when digits of agreement are $<6$. Two ensembles:
+
+\begin{enumerate}
+  \item \textbf{phys $\times$ eps.}
+    Physical transverse $e_1,e_2$ ($e_i\cdot q_i=0$). Bin by photon
+    virtuality $\varepsilon$ with $q_1^2=q_2^2=-\varepsilon$
+    ($\varepsilon\to0$ is the multiperipheral peak of the paper).
+  \item \textbf{gauge $\times$ delta.}
+    $e_1=q_1+\delta\,e_T$ with random transverse $e_T$, fixed
+    $\varepsilon=10^{-2}$. Bin by $\delta\to0$ (approach to the Ward
+    surface of Sections~\ref{sec:naive-checks}--\ref{sec:numerics}).
+\end{enumerate}
+\begin{verbatim}
+make -C numeric mc
+\end{verbatim}
+
+\subsection{Results}
+\label{sec:mc-results}
+
+\begin{center}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+ensemble / bin & $\mathrm{frac\_bad}$ & mean digits \\
+\midrule
+phys, $\varepsilon=10^{-1}$ & $0$ & $26.1$ \\
+phys, $\varepsilon=10^{-6}$ & $0$ & $26.5$ \\
+phys, $\varepsilon=10^{-12}$ & $0$ & $26.2$ \\
+\midrule
+gauge, $\delta=10^{-1}$ & $0$ & $11.8$ \\
+gauge, $\delta=10^{-2}$ & $0$ & $9.7$ \\
+gauge, $\delta=10^{-3}$ & $0.011$ & $7.8$ \\
+gauge, $\delta=10^{-4}$ & $0.69$ & $5.7$ \\
+gauge, $\delta=10^{-5}$ & $0.99$ & $3.8$ \\
+gauge, $\delta\le10^{-7}$ & $1.00$ & $\lesssim 0.2$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Physical transverse samples stay $\ge 11$ digits of agreement at every
+$\varepsilon$ down to $10^{-12}$: approaching the multiperipheral peak
+\emph{alone} does not make this $\gamma^*\gamma^*\to\mu^+\mu^-$ subsystem
+poly lose precision in IEEE double. The bad fraction rises only when the
+polarization approaches the Ward surface ($\delta\lesssim10^{-4}$),
+matching Section~\ref{sec:numerics} but now as a phase-space rate.
+
+\subsection{What this section does and does not claim}
+\label{sec:mc-claims}
+
+\begin{enumerate}
+  \item \textbf{Claimed here:} for the naive 98-term poly, catastrophic
+    double/long-double disagreement is a near-gauge phenomenon; its MC
+    fraction tracks $\delta$, not $\varepsilon$.
+  \item \textbf{Not claimed here:} (i)~that the full $e^+e^-\to e^+e^-\mu^+\mu^-$
+    Monte Carlo is free of peak-driven loss (electron-line currents can
+    source effective longitudinal admixture near $t_1,t_2\to0$);
+    (ii)~a comparison to a stable $M_{ij}$ evaluator; (iii)~importance
+    sampling of the paper's multiperipheral weight --- this is a uniform
+    orientation probe of the poly, not a cross-section estimate.
+\end{enumerate}
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-\emph{[To be filled in once Sections~\ref{sec:naive}--\ref{sec:mc} are
-  complete.]}
+Vermaseren's warning is concrete for
+$\gamma^*\gamma^*\to\mu^+\mu^-$. Expanding $|{\cal M}|^2$ into 4-vector
+products yields a 98-term polynomial
+(Section~\ref{sec:naive}) whose Ward identity holds in both Python and
+FORM (Sections~\ref{sec:naive-checks},~\ref{sec:symbolic-check}). The
+stable Appendix-C /~(III.10) route hides that cancellation in
+$\varepsilon$-tensor structure (Section~\ref{sec:stable}). Numerically,
+IEEE double evaluation of the naive poly loses essentially all digits
+near $e_1=q_1$ (Section~\ref{sec:numerics}), and the Monte Carlo fraction
+of bad points tracks proximity to that Ward surface rather than photon
+virtuality alone (Section~\ref{sec:mc}).
+
+What remains open for a full naive$\equiv$stable proof is a faithful
+FORM transcription of formula~(III.11) (and Appendix~C for $M_{12}$,
+$M_{21}$). The gauge premise and the numeric damage of ignoring it are
+already machine-checked.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
