@@ -10,6 +10,7 @@ Run from this directory (`scripts/`) so imports resolve.
 | `mumu_gauge_check.py` | Ward identity on amplitude $N$ | Must print `ALL TERMS CANCEL` |
 | `mumu_gauge_check_squared.py` | Ward identity on the squared-trace sum | Must print `VANISHES` / exit 0 |
 | `muon_pair_denominator_check.py` | Topic 6: muon-pair vs `pi0.c` `la` bracket | Separate from this report’s Sec. 3 |
+| `emit_naive_poly_c.py` | Emit `numeric/eval_naive_poly.h` for Sec. 6 | Regenerates the committed C header |
 
 ## Run order (Section 3 checks)
 
