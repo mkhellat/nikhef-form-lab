@@ -13,7 +13,7 @@ resolve.
 | `mumu_gauge_check.py` | Ward identity on amplitude $N$ | Must print `ALL TERMS CANCEL` |
 | `mumu_gauge_check_squared.py` | Ward identity on the squared-trace sum | Must print `VANISHES` / exit 0 |
 | `mumu_stable_35_check.py` | Naive poly ≡ paper (3.5) | Must print `PASS: naive ≡ (3.5)...` |
-| `mumu_mij_check.py` | (3.11) $M_{11}/B^2$ ≡ $W_1\otimes W_1$(naive) | Must print `PASS: M11/B^2...` |
+| `mumu_mij_check.py` | (3.11) $\sum M_{ij}/B^2$ ≡ $L\otimes L$(naive), per $W_i\otimes W_j$ | Must print `PASS: M_ij/B^2...` |
 | `emit_naive_poly_c.py` | Emit `numeric/eval_naive_poly.h` | Regenerates the committed C header |
 | `muon_pair_denominator_check.py` | Topic 6: muon-pair vs `pi0.c` `la` bracket | Separate from this report’s Sec. 3 |
 
@@ -26,8 +26,9 @@ Related (not in this folder):
 | `numeric/` (`make mc`) | Sec 7 MC fractions | phys `frac_bad=0`; gauge → 1 |
 
 Detailed transcription notes, the $Q=p_6-p_7$ convention, the (3.5)
-scanned-sign fix, and the $M_{11}$ contraction method are in the report
-appendix “Verification of (3.5) and $M_{11}$”.
+scanned-sign fix, the $M_{12}$/$M_{21}$ three-index $\varepsilon$
+convention, and the $M_{22}$ bilinear index order are in the report
+appendix “Verification of (3.5) and $M_{ij}$”.
 
 ## Run order
 
@@ -61,6 +62,8 @@ only if the committed C header must track the new poly.
   scripts substitute `D_i = k_i^2 - m^2`.
 - On-shell `p6.p6 = p7.p7 = m^2` **is** imposed in the naive sum and in
   the squared Ward check. Dropping it makes the squared Ward check fail.
-- In (3.5) / $M_{11}$ checks, $Q = p_6 - p_7$ (not $q_1+q_2$).
+- In (3.5) / $M_{ij}$ checks, $Q = p_6 - p_7$ (not $q_1+q_2$).
 - The last two bilinears of the implemented (3.5) use an overall minus
   relative to a naive scan reading (least-squares vs naive poly).
+- $M_{22}$ mix bilinears are $\varepsilon(p_2,q_2;q_1,Q)$ /
+  $\varepsilon(p_1,q_1;q_2,Q)$, not against $p_i$ in the second slot.

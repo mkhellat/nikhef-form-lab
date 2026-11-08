@@ -523,49 +523,40 @@ This is the machine identity between Section~\ref{sec:naive} and the
 paper's stable \emph{subreaction} form. It is not yet a transcription of
 the electron-dressed $M_{ij}$ of~(III.11).
 
-\subsection{$M_{11}$ of (III.11) vs $W_1\otimes W_1$ dressing}
+\subsection{$M_{ij}$ of (III.11) vs $W_i\otimes W_j$ dressing}
 \label{sec:M11-check}
 
-Formula~(III.11)/(3.11) starts with the Levi-Civita-free block
+Formula~(III.11)/(3.11) splits $|{\cal M}|^2$ into four blocks
+$M_{11}$, $M_{12}$, $M_{21}$, $M_{22}$ weighted by the $W_i$ of~(3.8).
+With $B=(q_1{\cdot}q_2)^2-(Q{\cdot}q_1)^2$ and $Q=p_6-p_7$, script
+\texttt{scripts/mumu\_mij\_check.py} checks each corner separately and
+the full sum:
 \begin{equation}
-\begin{aligned}
-  M_{11}
-  &= 64\,q_1^2 q_2^2\Big\{
-       B\big[(Q{\cdot}q_1)^2 - q_1^2 q_2^2 + (q_1{\cdot}q_2)^2
-             - Q^2(q_1^2+q_2^2+2m^2)\big] \\
-  &\qquad\qquad
-       - 2(Q{\cdot}q_1)^2(q_1^2+2m^2)(q_2^2+2m^2)
-     \Big\},
-\end{aligned}
-\label{eq:M11}
-\end{equation}
-with $B=(q_1{\cdot}q_2)^2-(Q{\cdot}q_1)^2$ and $Q=p_6-p_7$. Script
-\texttt{scripts/mumu\_mij\_check.py} checks
-\begin{equation}
-  M_{11}/B^2
+  M_{ij}/B^2
   \;\equiv\;
   S_{\mathrm{naive}}
   \text{ contracted with }
-  L_{W_1}(q_1)\otimes L_{W_1}(q_2),
+  L_{W_i}(q_1,p_1)\otimes L_{W_j}(q_2,p_2),
 \end{equation}
-where $L_{W_1}(q)=2q^2(g-qq/q^2)$ is the $W_1$ piece of~(3.8). The
-contraction method and PASS threshold are in Appendix~\ref{app:verify}.
+and $\sum_{ij}M_{ij}/B^2$ against $L\otimes L$ ($W_1=W_2=1$).
+Here $L_{W_1}(q)=2q^2(g-qq/q^2)$ and $L_{W_2}=8\,r_\mu r_\nu$ with
+$r=p-(p{\cdot}q)/q^2\,q$. Electron momenta are massless with
+$2p_i{\cdot}q_i=q_i^2$. Transcription details, the three-index $\varepsilon$
+sign convention in $M_{12}$/$M_{21}$, and the $M_{22}$ bilinear index
+order are in Appendix~\ref{app:verify}.
 \begin{verbatim}
-python3 scripts/mumu_mij_check.py   # must print PASS: M11/B^2 ...
+python3 scripts/mumu_mij_check.py   # must print PASS: M_ij/B^2 ...
 \end{verbatim}
-This opens the electron-dressed~(III.11) layer at the pure-$W_1$ corner.
-$M_{12}$, $M_{21}$, $M_{22}$ (Levi-Civita + beam momenta $p_1,p_2$) are
-not claimed here.
+This closes the electron-dressed~(III.11) layer against the naive poly.
 
 \subsection{What is not yet claimed}
 \label{sec:form-not-claimed}
 
-A full term-by-term proof that $\sum_{ij}M_{ij}$ of~(III.11) equals the
-naive poly contracted with the complete point-particle tensors~(3.8)
-($W_1=W_2=1$) still needs faithful $M_{12}$, $M_{21}$, $M_{22}$ (Appendix~C).
-The Ward identity, naive$\equiv$(3.5), and $M_{11}\equiv W_1\otimes W_1$
-checks above close the $\gamma^*\gamma^*$ layer and the first $M_{ij}$
-corner; they do not yet close the full $e^+e^-$ $M_{ij}$ sum.
+The checks above are numerical identities (finite-difference Hessian
+$\times$ transcribed $M_{ij}$), not a FORM/Schouten derivation of
+Appendix~C. A side-by-side IEEE digit-loss comparison of the naive poly
+against a stable $M_{ij}$ \emph{evaluator} in the Monte Carlo of
+Sections~\ref{sec:numerics}--\ref{sec:mc} is also still open.
 
 \section{Numerical demonstration of the cancellation}
 \label{sec:numerics}
@@ -638,10 +629,11 @@ gauge / multiperipheral regime.
     IEEE double near $e_1=q_1$ loses essentially all significant digits
     relative to the same poly in long double; the loss tracks the approach
     to the Ward zero.
-  \item \textbf{Not claimed here:} (i)~a side-by-side numeric comparison
-    against the stable $M_{ij}$ form of Section~\ref{sec:stable} (that
-    still needs a transcribed~(III.11) evaluator); (ii)~a Monte Carlo
-    fraction of phase-space points that are ``bad'' (Section~\ref{sec:mc});
+  \item \textbf{Not claimed here:} (i)~a side-by-side IEEE comparison of
+    the naive poly against a stable $M_{ij}$ \emph{evaluator} on this same
+    $\delta$-ray (the algebraic $M_{ij}\equiv W_i\otimes W_j$ gate is in
+    Section~\ref{sec:M11-check}); (ii)~a Monte Carlo fraction of
+    phase-space points that are ``bad'' (Section~\ref{sec:mc});
     (iii)~that the near-gauge ray $e_1=q_1+\delta\hat x$ is identical to
     the physical $t_1,t_2\to0$ multiperipheral peak --- it is the cleanest
     probe of the same cancellation, not a full phase-space survey.
@@ -738,11 +730,11 @@ of bad points tracks proximity to that Ward surface rather than photon
 virtuality alone (Section~\ref{sec:mc}).
 
 The $\gamma^*\gamma^*\to\mu^+\mu^-$ layer is closed
-(naive$\equiv$(3.5), Section~\ref{sec:naive-eq-35}), and the first
-electron-dressed corner $M_{11}\equiv W_1\otimes W_1$ is checked
-(Section~\ref{sec:M11-check}). What remains is $M_{12}$, $M_{21}$,
-$M_{22}$ (Appendix~C). The gauge premise and the numeric damage of
-ignoring it are already machine-checked.
+(naive$\equiv$(3.5), Section~\ref{sec:naive-eq-35}), and the full
+electron-dressed~(III.11) sum $\sum_{ij}M_{ij}\equiv L\otimes L$ is
+checked corner-by-corner (Section~\ref{sec:M11-check}). The gauge premise
+and the numeric damage of ignoring it are machine-checked; what remains
+is wiring a stable $M_{ij}$ evaluator into the digit-loss / MC drivers.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
@@ -854,7 +846,7 @@ file & role \\
 \texttt{scripts/mumu\_stable\_35\_check.py}
   & naive $\equiv$ paper~(3.5); see Appendix~\ref{app:verify} \\
 \texttt{scripts/mumu\_mij\_check.py}
-  & $M_{11}/B^2\equiv W_1\otimes W_1$; see Appendix~\ref{app:verify} \\
+  & $\sum M_{ij}/B^2\equiv L\otimes L$; see Appendix~\ref{app:verify} \\
 \texttt{scripts/emit\_naive\_poly\_c.py}
   & emits \texttt{numeric/eval\_naive\_poly.h} for Secs.~\ref{sec:numerics}--\ref{sec:mc} \\
 \texttt{form/mumu\_ward.frm}
@@ -887,7 +879,7 @@ Plus \texttt{make -C form check}, \texttt{make -C numeric run}, and
 \texttt{make -C numeric mc}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Verification of (3.5) and $M_{11}$}
+\section{Verification of (3.5) and $M_{ij}$}
 \label{app:verify}
 
 Main-text Sections~\ref{sec:naive-eq-35} and~\ref{sec:M11-check} state the
@@ -910,7 +902,7 @@ Vermaseren uses the letter $Q$ in two incompatible ways:
     different algebraic object (asymmetric in $t_1$).
 \end{itemize}
 All checks in this appendix use $Q=p_6-p_7$, matching~(3.5) and the
-$M_{11}$ block as transcribed from Nucl.\ Phys.\ B229~(1983)~355--356.
+$M_{ij}$ blocks as transcribed from Nucl.\ Phys.\ B229~(1983)~355--356.
 
 \subsection{Transcribed (3.5) used by the checker}
 \label{app:eq35-formula}
@@ -978,12 +970,12 @@ $10^{-3}$--$10^{-2}$ level; with it,
 \texttt{PASS} (100 samples: 50 physical-transverse, 50 near-gauge;
 relative error $<10^{-8}$, or absolute $<10^{-11}$ near $S=0$).
 
-\subsection{$M_{11}/B^2\equiv W_1\otimes W_1$ method}
+\subsection{$M_{ij}/B^2\equiv W_i\otimes W_j$ method}
 \label{app:M11-method}
 
-The point-particle tensor~(3.8) splits into a $W_1$ piece
-$L_{W_1}=2q^2(g-qq/q^2)$ and a $W_2$ piece $8\,r_\mu r_\nu$. For the
-$M_{11}$ corner only $L_{W_1}$ is used on both photons. If
+The point-particle tensor~(3.8) splits into
+$L_{W_1}=2q^2(g-qq/q^2)$ and $L_{W_2}=8\,r_\mu r_\nu$,
+$r=p-(p{\cdot}q)/q^2\,q$. If
 $S(e_1,e_2)=H_{\mu\nu\rho\sigma}e_1^\mu e_1^\nu e_2^\rho e_2^\sigma$
 (schematically), the script recovers the quadratic form in each
 polarization by finite differences on the coordinate basis,
@@ -995,13 +987,53 @@ polarization by finite differences on the coordinate basis,
        & \mu\neq\nu,
    \end{cases}
 \]
-then contracts $H_{\mu\nu}L^{W_1\,\mu\nu}$. Nested in $e_1$ then $e_2$,
-that yields $S_{W_1W_1}$. The falsifiable identity is
-$M_{11}/B^2=S_{W_1W_1}$ (not $M_{11}/(q_1^2 q_2^2 B)^2$: the
+then contracts $H_{\mu\nu}L^{W_i\,\mu\nu}$. Nested in $e_1$ then $e_2$,
+that yields $S_{W_i W_j}$. The falsifiable identities are
+$M_{ij}/B^2=S_{W_i W_j}$ for each corner and
+$\sum_{ij}M_{ij}/B^2=S_{LL}$ (not $M_{ij}/(q_1^2 q_2^2 B)^2$: the
 $(q_1^2 q_2^2)^2$ of~(3.10) is already carried by the $2q^2$ factors inside
-each $L_{W_1}$). PASS gate: relative error $<10^{-5}$ on 40 random
-multiperipheral samples (worst observed $\sim6\times10^{-6}$, from the
-finite-difference Hessian).
+each $L_{W_1}$). Samples use massless $p_i$ with $2p_i{\cdot}q_i=q_i^2$.
+
+\subsubsection*{Transcription notes (NPB~355--356)}
+
+\begin{itemize}
+  \item $M_{11}$: Levi-Civita-free; transcribed as~\eqref{eq:M11}
+    (prefactor $64\,q_1^2 q_2^2$).
+  \item $M_{12}$/$M_{21}$: NPB writes
+    $B(-\varepsilon^{p_2 q_2 q_1\mu}\varepsilon_{p_2 q_2 q_1\mu}-\cdots)$.
+    The Gram helper $\texttt{eps3sq}=-\det G(a,b,c)$ used for three-index
+    contractions has the opposite overall sign relative to that
+    typesetting, so the implementation uses
+    $B\bigl(\texttt{eps3sq}(p_2,q_2,q1)+\texttt{eps3sq}(p_2,q_2,Q)\bigr)$
+    (and the $M_{21}$ swap). The mix bilinears are
+    $\varepsilon^{p_2 q_2\mu\nu}\varepsilon_{q_1 Q\mu\nu}$ as printed.
+  \item $M_{22}$: overall $512$ times the brace on p.~356. The
+    $\tfrac18\mathrm{Tr}_{11}(\varepsilon^{p_2 q_2}\varepsilon_{q_1 Q})^2$
+    terms contract the \emph{second} pair against $(q_1,Q)$ or $(q_2,Q)$,
+    not $(p_1,Q)$ --- a naive $(q_i,e_i)\to(p_i,q_i)$ map of~(3.5) that
+    also remaps those slots fails at the $10^{-3}$ level.
+\end{itemize}
+
+PASS gate: relative error $<10^{-5}$ ($M_{11}$) / $<10^{-4}$ (other
+corners and full sum) on 30 random multiperipheral samples. Observed
+worst relative errors:
+$M_{11}\sim2\times10^{-7}$,
+$M_{12}/M_{21}\sim5\times10^{-7}$,
+$M_{22}\sim2\times10^{-5}$,
+full $\sim2\times10^{-5}$ (finite-difference Hessian).
+
+\begin{equation}
+\begin{aligned}
+  M_{11}
+  &= 64\,q_1^2 q_2^2\Big\{
+       B\big[(Q{\cdot}q_1)^2 - q_1^2 q_2^2 + (q_1{\cdot}q_2)^2
+             - Q^2(q_1^2+q_2^2+2m^2)\big] \\
+  &\qquad\qquad
+       - 2(Q{\cdot}q_1)^2(q_1^2+2m^2)(q_2^2+2m^2)
+     \Big\}.
+\end{aligned}
+\label{eq:M11}
+\end{equation}
 
 \subsection{Inventory of falsifiable gates}
 \label{app:gates}
@@ -1023,9 +1055,9 @@ squared Ward (FORM)
 naive $\equiv$(3.5)
   & \texttt{python3 mumu\_stable\_35\_check.py}
   & prints \texttt{PASS: naive = (3.5)...} \\
-$M_{11}\equiv W_1\otimes W_1$
+$\sum M_{ij}\equiv L\otimes L$
   & \texttt{python3 mumu\_mij\_check.py}
-  & prints \texttt{PASS: M11/B\^2...} \\
+  & prints \texttt{PASS: M\_ij/B\^2...} \\
 digit-loss ray
   & \texttt{make -C numeric run}
   & digits fall with $\delta$ (Sec.~\ref{sec:numerics}) \\
