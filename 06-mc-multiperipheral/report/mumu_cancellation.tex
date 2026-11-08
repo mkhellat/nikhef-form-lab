@@ -516,10 +516,82 @@ equality of the squared polynomials.
 \section{Numerical demonstration of the cancellation}
 \label{sec:numerics}
 
-\emph{[To be filled in: double-precision evaluation of both forms at
-  kinematic points approaching $t_1,t_2\to0$, with explicit digit-loss
-  counts, following the same style as
-  \texttt{kinc2-driver/check\_gram\_minors.c} for the $\pi^0$ case.]}
+Section~\ref{sec:symbolic-check} checked the Ward premise symbolically in
+FORM. This section shows the \emph{numeric} consequence of evaluating the
+naive 98-term 4-vector-product polynomial of Section~\ref{sec:naive} in
+floating point when that cancellation is nearly exact --- the same kind of
+stress as \texttt{kinc2-driver/check\_gram\_minors.c} for the $\pi^0$ Gram
+minors, but for the $\mu$-pair squared amplitude.
+
+\subsection{Stress configuration}
+\label{sec:numerics-setup}
+
+Take a fixed mildly virtual two-photon kinematics ($W=20\,\mathrm{GeV}$,
+$m_\mu=0.105658\,\mathrm{GeV}$, $\varepsilon=10^{-2}$ in
+$q_z=\sqrt{E^2+\varepsilon}$) and set
+\begin{equation}
+  e_1 = q_1 + \delta\,\hat x,\qquad e_2 = \hat y.
+\end{equation}
+At $\delta=0$ one has $e_1=q_1$, so the squared Ward identity of
+Sections~\ref{sec:naive-checks} and~\ref{sec:form-checked} forces
+$S=0$ exactly. For small $\delta$, $S=O(\delta^2)$ (or smaller) while
+individual monomials in the expanded poly remain $O(1)$--$O(W^2)$: the
+sum is a cancellation between large terms.
+
+The poly is the committed header
+\texttt{numeric/eval\_naive\_poly.h}, emitted from
+\texttt{scripts/emit\_naive\_poly\_c.py} (same sympy sum as
+Section~\ref{sec:naive}). The driver
+\texttt{numeric/digit\_loss\_naive.c} evaluates it once in \texttt{double}
+and once in \texttt{long double} at identical inputs and reports relative
+error and digits of agreement.
+
+\subsection{Scan}
+\label{sec:numerics-scan}
+
+Run from \texttt{numeric/}:
+\begin{verbatim}
+make && make run
+\end{verbatim}
+Representative output ($W=20\,\mathrm{GeV}$, $\varepsilon=10^{-2}$):
+\begin{center}
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+$\delta$ & $S$ (double) & $S$ (long double) & rel.\ err. & digits \\
+\midrule
+$10^{-1}$ & $8.00\times10^{-2}$ & $8.00\times10^{-2}$ & $3\times10^{-12}$ & $11.5$ \\
+$10^{-2}$ & $8.00\times10^{-4}$ & $8.00\times10^{-4}$ & $3\times10^{-10}$ & $9.5$ \\
+$10^{-3}$ & $8.00\times10^{-6}$ & $8.00\times10^{-6}$ & $6\times10^{-9}$ & $8.2$ \\
+$10^{-4}$ & $8.00\times10^{-8}$ & $8.00\times10^{-8}$ & $6\times10^{-7}$ & $6.2$ \\
+$10^{-5}$ & $8.00\times10^{-10}$ & $8.00\times10^{-10}$ & $1\times10^{-4}$ & $3.9$ \\
+$10^{-6}$ & $8.2\times10^{-12}$ & $7.9\times10^{-12}$ & $3\times10^{-2}$ & $1.5$ \\
+$10^{-7}$ & $5.4\times10^{-13}$ & $4.7\times10^{-14}$ & $\sim 10$ & $<0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Digits of agreement fall steadily as $\delta\to0$. By $\delta\sim10^{-7}$
+double and long double no longer even share a leading digit: the naive
+expanded route has lost the answer to cancellation noise. This is a
+concrete instance of Vermaseren's warning that substituting numerical
+4-vector products into a fully expanded expression is dangerous near the
+gauge / multiperipheral regime.
+
+\subsection{What this section does and does not claim}
+\label{sec:numerics-claims}
+
+\begin{enumerate}
+  \item \textbf{Claimed here:} evaluating the \emph{naive} 98-term poly in
+    IEEE double near $e_1=q_1$ loses essentially all significant digits
+    relative to the same poly in long double; the loss tracks the approach
+    to the Ward zero.
+  \item \textbf{Not claimed here:} (i)~a side-by-side numeric comparison
+    against the stable $M_{ij}$ form of Section~\ref{sec:stable} (that
+    still needs a transcribed~(III.11) evaluator); (ii)~a Monte Carlo
+    fraction of phase-space points that are ``bad'' (Section~\ref{sec:mc});
+    (iii)~that the near-gauge ray $e_1=q_1+\delta\hat x$ is identical to
+    the physical $t_1,t_2\to0$ multiperipheral peak --- it is the cleanest
+    probe of the same cancellation, not a full phase-space survey.
+\end{enumerate}
 
 \section{Monte Carlo scan}
 \label{sec:mc}
