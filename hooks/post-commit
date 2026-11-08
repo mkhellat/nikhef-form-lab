@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# After each commit on main/master that touches the muon-pair cancellation
+# report sources, rebuild the PDF and rewrite the orphan branch pdf-builds.
+#
+# Install (does not change git config):
+#   cp hooks/post-commit .git/hooks/post-commit
+#   chmod +x .git/hooks/post-commit
+#
+# Always exits 0 so a publish failure never looks like a broken commit.
+
+set -u
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+cd "$ROOT" || exit 0
+
+cur="$(git symbolic-ref --short -q HEAD 2>/dev/null || true)"
+[[ "$cur" == "main" || "$cur" == "master" ]] || exit 0
+
+# Merge commits: diff against first parent. Root commit: list the tree.
+if git rev-parse -q --verify HEAD^ >/dev/null 2>&1; then
+  changed="$(git diff --name-only HEAD^ HEAD)"
+else
+  changed="$(git ls-tree -r --name-only HEAD)"
+fi
+
+if ! printf '%s\n' "$changed" | grep -q '^06-mc-multiperipheral/report/'; then
+  exit 0
+fi
+
+echo "[post-commit] 06-mc-multiperipheral/report/ changed — publishing pdf-builds..."
+exec "$ROOT/hooks/publish-pdf-builds.sh"
