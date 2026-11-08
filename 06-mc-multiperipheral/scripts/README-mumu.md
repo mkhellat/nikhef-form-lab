@@ -12,6 +12,7 @@ Run from this directory (`scripts/`) so imports resolve.
 | `muon_pair_denominator_check.py` | Topic 6: muon-pair vs `pi0.c` `la` bracket | Separate from this report’s Sec. 3 |
 | `emit_naive_poly_c.py` | Emit `numeric/eval_naive_poly.h` for Sec. 6 | Regenerates the committed C header |
 | `mumu_stable_35_check.py` | Naive poly ≡ paper (3.5) Levi-Civita form | Must print `PASS: naive ≡ (3.5)...` |
+| `mumu_mij_check.py` | (3.11) $M_{11}/B^2$ ≡ $W_1\otimes W_1$(naive) | Must print `PASS: M11/B^2...` |
 
 ## Run order (Section 3 checks)
 
