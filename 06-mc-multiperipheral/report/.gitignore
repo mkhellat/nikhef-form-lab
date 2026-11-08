@@ -2,11 +2,11 @@
 *.bbl
 *.blg
 *.fdb_latexmk
-figures/*.pdf
 *.fls
 *.log
 *.nav
 *.out
+*.pdf
 *.snm
 *.synctex.gz
 *.toc
