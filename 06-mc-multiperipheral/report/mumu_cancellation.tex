@@ -6,8 +6,22 @@
 \usepackage{hyperref}
 \usepackage{slashed}
 \usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
 
 \newcommand{\slashedp}[1]{\slashed{#1}}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  inputencoding=utf8,
+  extendedchars=true,
+  literate={—}{{---}}1,
+}
 
 \title{Reproducing Vermaseren's numerical-instability claim for\\
 $\gamma^*\gamma^*\to\mu^+\mu^-$}
@@ -125,11 +139,202 @@ algebra.
 \section{The naive (``standard fashion'') squared amplitude}
 \label{sec:naive}
 
-\emph{[To be filled in: full spin-summed trace
-  $\mathrm{Tr}[(\slashed p_6+m)\,N\,(\slashed p_7-m)\,\bar N]$, expanded
-  into its 16 cross terms, each reduced via the standard trace identities.
-  This is the ``expressing it completely in terms of 4-vector products''
-  route the paper's quoted paragraph describes.]}
+This section carries out the calculation the paper warns about: expand
+$N$ into pieces, form the spin-summed squared amplitude as a sum of Dirac
+traces, reduce every trace to products of 4-vector dots, and keep the
+propagator denominators $D_1$ and $D_2$ as they stand. No Schouten
+identity and no Levi-Civita rearrangement is used. The algebra is
+implemented in \texttt{scripts/mumu\_trace\_lib.py} and driven by
+\texttt{scripts/mumu\_naive\_trace.py}; the checks that can falsify it are
+listed in Section~\ref{sec:naive-checks}. Full term listings and the
+subtleties that showed up while deriving them are in
+Appendix~\ref{app:full-naive}.
+
+\subsection{Split of $N$ into four pieces}
+\label{sec:N-split}
+
+Write each diagram's numerator as a massless slash piece plus a mass
+piece:
+\begin{align}
+  N_1 &= \frac{\slashed e_1\,\slashed k_1\,\slashed e_2}{D_1}, &
+  N_2 &= \frac{m\,\slashed e_1\,\slashed e_2}{D_1}, \nonumber\\
+  N_3 &= \frac{\slashed e_2\,\slashed k_2\,\slashed e_1}{D_2}, &
+  N_4 &= \frac{m\,\slashed e_2\,\slashed e_1}{D_2},
+  \label{eq:N-pieces}
+\end{align}
+so $N=N_1+N_2+N_3+N_4$. For real polarization vectors the conjugate
+amplitude $\bar N$ is obtained by reversing the order of the gamma
+matrices in each piece (e.g.\ $\overline{N_1}=\slashed e_2\,\slashed k_1\,
+\slashed e_1/D_1$). This is an assumption of the calculation; it is the
+standard real-$e$ convention, not something we re-derived from a complex
+polarization basis.
+
+\subsection{Spin sum as a $4\times 4$ of traces}
+\label{sec:16-terms}
+
+The spin-summed squared amplitude (up to the overall coupling stripped in
+Section~\ref{sec:feynman-rules}) is
+\begin{equation}
+  S = \mathrm{Tr}\!\left[(\slashed p_6+m)\,N\,(\slashed p_7-m)\,\bar N\right]
+    = \sum_{i,j=1}^{4} T_{ij},
+  \qquad
+  T_{ij} =
+  \mathrm{Tr}\!\left[(\slashed p_6+m)\,N_i\,(\slashed p_7-m)\,\overline{N_j}\right].
+  \label{eq:S-def}
+\end{equation}
+Each $T_{ij}$ still contains the factor $1/(D_a D_b)$ from the two pieces
+involved. Expanding $(\slashed p_6+m)$ and $(\slashed p_7-m)$ gives four
+ordinary gamma-chain traces per $T_{ij}$. A chain with an odd number of
+gamma matrices has vanishing trace; that kills some of the four
+contributions outright (see the worked example below).
+
+Reduction of an even-length chain uses the standard recursive contraction
+(with $\mathrm{Tr}[1]=4$)
+\begin{equation}
+  \mathrm{Tr}[\gamma^{v_1}\cdots\gamma^{v_n}]
+  = \sum_{k=2}^{n}(-1)^{k-1}\,(v_1{\cdot}v_k)\,
+    \mathrm{Tr}[\text{chain without $v_1,v_k$}].
+  \label{eq:contraction}
+\end{equation}
+There is no $\gamma^5$ in this QED amplitude, so no Levi-Civita tensor
+appears. That is by construction of the Feynman rules used in
+Section~\ref{sec:feynman-rules}, not an extra truncation.
+
+\subsection{Worked example: $T_{22}$}
+\label{sec:T22}
+
+Take $i=j=2$, the shortest nontrivial diagonal piece:
+\begin{equation}
+  T_{22}
+  = \frac{m^2}{D_1^2}\,
+    \mathrm{Tr}\!\left[
+      (\slashed p_6+m)\,
+      \slashed e_1\,\slashed e_2\,
+      (\slashed p_7-m)\,
+      \slashed e_2\,\slashed e_1
+    \right].
+\end{equation}
+The four sub-traces are:
+\begin{align}
+  A &= \mathrm{Tr}[\slashed p_6\,\slashed e_1\,\slashed e_2\,
+                   \slashed p_7\,\slashed e_2\,\slashed e_1],
+  \nonumber\\
+  B &= (-m)\,\mathrm{Tr}[\slashed p_6\,\slashed e_1\,\slashed e_2\,
+                         \slashed e_2\,\slashed e_1],
+  \nonumber\\
+  C &= m\,\mathrm{Tr}[\slashed e_1\,\slashed e_2\,
+                      \slashed p_7\,\slashed e_2\,\slashed e_1],
+  \nonumber\\
+  D &= (-m^2)\,\mathrm{Tr}[\slashed e_1\,\slashed e_2\,
+                           \slashed e_2\,\slashed e_1].
+  \label{eq:T22-parts}
+\end{align}
+$B$ and $C$ each have five gamma matrices, so $B=C=0$. The four-gamma
+identity
+$\mathrm{Tr}[\slashed a\,\slashed b\,\slashed c\,\slashed d]
+=4\bigl[(a{\cdot}b)(c{\cdot}d)-(a{\cdot}c)(b{\cdot}d)+(a{\cdot}d)(b{\cdot}c)\bigr]$
+gives
+\begin{equation}
+  D = (-m^2)\cdot 4\,(e_1{\cdot}e_1)(e_2{\cdot}e_2).
+\end{equation}
+The six-gamma trace $A$ is reduced by~\eqref{eq:contraction}; after
+imposing the on-shell conditions $p_6{\cdot}p_6=p_7{\cdot}p_7=m^2$
+(Section~\ref{sec:naive-assumptions}) one obtains
+\begin{align}
+  A &= 4(e_1{\cdot}e_1)(e_2{\cdot}e_2)(p_6{\cdot}p_7)
+      - 8(e_1{\cdot}e_1)(e_2{\cdot}p_6)(e_2{\cdot}p_7)
+      \nonumber\\
+    &\quad + 16(e_1{\cdot}e_2)(e_1{\cdot}p_6)(e_2{\cdot}p_7)
+      - 8(e_1{\cdot}p_6)(e_1{\cdot}p_7)(e_2{\cdot}e_2).
+\end{align}
+Putting $A$ and $D$ together with the prefactor $m^2/D_1^2$,
+\begin{align}
+  T_{22}
+  &= \frac{1}{D_1^2}\Bigl[
+       -4(e_1{\cdot}e_1)(e_2{\cdot}e_2)\,m^4
+       +4(e_1{\cdot}e_1)(e_2{\cdot}e_2)\,m^2(p_6{\cdot}p_7)
+       \nonumber\\
+  &\hspace{2.2em}
+       -8(e_1{\cdot}e_1)(e_2{\cdot}p_6)(e_2{\cdot}p_7)\,m^2
+       +16(e_1{\cdot}e_2)(e_1{\cdot}p_6)(e_2{\cdot}p_7)\,m^2
+       \nonumber\\
+  &\hspace{2.2em}
+       -8(e_1{\cdot}p_6)(e_1{\cdot}p_7)(e_2{\cdot}e_2)\,m^2
+     \Bigr].
+  \label{eq:T22-result}
+\end{align}
+This matches the symbolic output of \texttt{mumu\_naive\_trace.py} for
+\texttt{T[N2,N2]} exactly (term by term). The same script evaluates the
+other fifteen $T_{ij}$; those expressions are not re-derived by hand in
+the main text.
+
+\subsection{Result of the full sum}
+\label{sec:naive-result}
+
+Running \texttt{scripts/mumu\_naive\_trace.py} (which uses the shared
+library above) yields:
+\begin{itemize}
+  \item none of the sixteen $T_{ij}$ vanishes as a whole;
+  \item after expanding and collecting, the sum $S$ contains
+    \textbf{98} distinct monomials in external dot products;
+  \item those monomials split by denominator as
+    $18$ with $1/D_1^2$, $18$ with $1/D_2^2$, and $62$ with $1/(D_1 D_2)$.
+\end{itemize}
+The separate $D_1$, $D_2$, and $D_1 D_2$ families are the concrete form of
+the paper's ``standard fashion'' expression: there is no single common
+denominator at this stage, and large cancellations between families (and
+within a family) are left for floating-point evaluation to discover. The
+machine-readable listing is
+\texttt{scripts/generated/mumu\_naive\_Tij.txt}, reproduced in
+Appendix~\ref{app:term-dump}.
+
+\subsection{Assumptions, and what falsifies them}
+\label{sec:naive-assumptions}
+
+The following are imposed or not imposed, deliberately:
+
+\begin{enumerate}
+  \item \textbf{Imposed:} $p_6{\cdot}p_6=p_7{\cdot}p_7=m^2$.
+    These are the physical muon mass shells. If they are left as free
+    symbols, the squared Ward identity of
+    Section~\ref{sec:naive-checks} fails (a nonzero remainder of order
+    $10^2$ monomials). So the on-shell conditions are not optional bookkeeping.
+  \item \textbf{Not imposed in $S$:} momentum conservation relating
+    $\{e_1,e_2,k_1,k_2,p_6,p_7\}$, and the definitions
+    $D_i=k_i^2-m^2$. In the naive sum, all those dots and both $D_i$ are
+    independent symbols. That is the literal ``express in 4-vector
+    products'' expansion; further kinematic reduction is a separate step
+    and is \emph{not} claimed here.
+  \item \textbf{Assumed:} real $e_1,e_2$ so that $\bar N$ is the gamma-order
+    reverse of $N$. Not cross-checked against a complex-polarization
+    formulation in this repository.
+\end{enumerate}
+
+\subsection{Checks that can fail}
+\label{sec:naive-checks}
+
+Two independent Ward-identity scripts test gauge invariance of the same
+$N$ that enters $S$:
+
+\begin{enumerate}
+  \item \texttt{scripts/mumu\_gauge\_check.py} substitutes $e_1\to q_1$ in
+    $N$ alone, reduces with the on-shell Dirac equations
+    $\bar u(p_6)\slashed p_6=m\,\bar u(p_6)$ and
+    $\slashed p_7\,v(p_7)=-m\,v(p_7)$, and substitutes $D_i=k_i^2-m^2$.
+    Result: diagram~1 alone $\to-\slashed e_2$, diagram~2 alone
+    $\to+\slashed e_2$, sum $=0$. Neither diagram is gauge invariant by
+    itself; only the sum is. (An earlier draft of this script had a
+    duplicated $k_1$ token in one word list; the hand reduction disagreed
+    with the machine until that bug was fixed.)
+  \item \texttt{scripts/mumu\_gauge\_check\_squared.py} substitutes
+    $e_1\to q_1$ \emph{only} on the $N$ side of~\eqref{eq:S-def}, leaves
+    $\bar N$ physical, and uses the same trace code as the naive sum.
+    Result: the full expression vanishes. Replacing $e_1$ on both $N$ and
+    $\bar N$ would give the trivial $0\cdot 0=0$ and is not used.
+\end{enumerate}
+Both scripts exit with a clear failure message if the identity does not
+hold. As of this writing both pass. Index and run order:
+\texttt{scripts/README-mumu.md}.
 
 \section{Vermaseren's stable form}
 \label{sec:stable}
@@ -164,5 +369,141 @@ algebra.
 
 \emph{[To be filled in once Sections~\ref{sec:naive}--\ref{sec:mc} are
   complete.]}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+
+\section{Full naive derivation: subtleties and term dump}
+\label{app:full-naive}
+
+\subsection{Why the main text stops at one $T_{ij}$}
+
+Hand-reducing all sixteen $T_{ij}$ through~\eqref{eq:contraction} is
+possible but error-prone: the longest chains (e.g.\ $T_{11}$ and $T_{33}$)
+are six-gamma traces with three non-commuting momenta from the
+propagators, and the mixed $D_1 D_2$ blocks ($T_{13}$, $T_{31}$, \ldots)
+couple $k_1$ and $k_2$. The trustworthy record of that algebra is the
+program in \texttt{mumu\_trace\_lib.py}, not a second hand transcription.
+What the appendix adds is (i)~the issues that actually broke checks during
+development, (ii)~the per-$T_{ij}$ monomial counts, and (iii)~the raw
+generated dump.
+
+\subsection{Bugs and failed checks (kept visible)}
+
+\begin{description}
+  \item[Duplicated token in the amplitude Ward script.]
+    An early version of \texttt{mumu\_gauge\_check.py} encoded diagram~1's
+    $k$-piece as the word \texttt{['p6','k1','k1','e2']} instead of
+    \texttt{['p6','k1','e2']}. The machine then disagreed with the hand
+    reduction in that script's docstring. The hand reduction was right;
+    the word list was wrong. After the fix, machine and hand agree:
+    diagram~1 $\to-\slashed e_2$, diagram~2 $\to+\slashed e_2$.
+  \item[Missing on-shell conditions in the squared Ward script.]
+    With $p_6{\cdot}p_6$ and $p_7{\cdot}p_7$ left free,
+    \texttt{mumu\_gauge\_check\_squared.py} does \emph{not} return zero
+    (order $200$ leftover monomials after substituting $D_i=k_i^2-m^2$).
+    Imposing $p_6{\cdot}p_6=p_7{\cdot}p_7=m^2$ restores zero. The same
+    substitution was then applied in the naive sum. Re-running the naive
+    script with the substitution present did not change the 98-term count
+    relative to the earlier draft that omitted it in that script alone
+    --- but the squared Ward check is the reason the substitution is
+    mandatory for the pipeline as a whole.
+  \item[Wrong Ward test on $|M|^2$.]
+    Substituting $e_1\to q_1$ into \emph{both} $N$ and $\bar N$ makes the
+    squared trace vanish for a trivial reason. That test was rejected; the
+    script substitutes only on $N$.
+\end{description}
+
+\subsection{Per-piece structure (from the generator)}
+\label{app:counts}
+
+Monomial counts per $T_{ij}$ after on-shell substitution, as printed into
+\texttt{scripts/generated/mumu\_naive\_Tij.txt}:
+
+\begin{center}
+\begin{tabular}{@{}llr@{}}
+\toprule
+$T_{ij}$ & denominator & monomials \\
+\midrule
+$T_{11}$ & $D_1^2$     & 9 \\
+$T_{12}$ & $D_1^2$     & 4 \\
+$T_{13}$ & $D_1 D_2$  & 34 \\
+$T_{14}$ & $D_1 D_2$  & 10 \\
+$T_{21}$ & $D_1^2$     & 4 \\
+$T_{22}$ & $D_1^2$     & 5 \\
+$T_{23}$ & $D_1 D_2$  & 10 \\
+$T_{24}$ & $D_1 D_2$  & 8 \\
+$T_{31}$ & $D_1 D_2$  & 34 \\
+$T_{32}$ & $D_1 D_2$  & 10 \\
+$T_{33}$ & $D_2^2$     & 9 \\
+$T_{34}$ & $D_2^2$     & 4 \\
+$T_{41}$ & $D_1 D_2$  & 10 \\
+$T_{42}$ & $D_1 D_2$  & 8 \\
+$T_{43}$ & $D_2^2$     & 4 \\
+$T_{44}$ & $D_2^2$     & 5 \\
+\midrule
+sum of row counts & & 168 \\
+collected $S$     & & 98 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The row-count sum ($168$) exceeds $98$ because like terms from different
+$T_{ij}$ combine when the sixteen pieces are added. The $18+18+62$ split
+of the collected $S$ by denominator family is checked in the same script
+and is independent of the row table above.
+
+Observable symmetries in the dump (not assumed in the code, read off
+after the fact): $T_{12}=T_{21}$, $T_{14}=T_{41}$, $T_{23}=T_{32}$,
+$T_{24}=T_{42}$, and $T_{13}=T_{31}$. The diagonal blocks $T_{11}$ and
+$T_{33}$ are $k_1\leftrightarrow k_2$, $D_1\leftrightarrow D_2$ images of
+each other up to the $e_1\leftrightarrow e_2$ routing of the crossed
+diagram; the dump should be read with that in mind rather than as sixteen
+unrelated polynomials.
+
+\subsection{Code layout}
+\label{app:code}
+
+\begin{center}
+\begin{tabular}{@{}lp{0.62\textwidth}@{}}
+\toprule
+file & role \\
+\midrule
+\texttt{scripts/mumu\_trace\_lib.py}
+  & shared contraction, $N_i$ definitions, on-shell map \\
+\texttt{scripts/mumu\_naive\_trace.py}
+  & builds all $T_{ij}$ and $S$; writes the dump file \\
+\texttt{scripts/mumu\_gauge\_check.py}
+  & Ward identity on $N$ (amplitude level) \\
+\texttt{scripts/mumu\_gauge\_check\_squared.py}
+  & Ward identity on the squared-trace sum \\
+\texttt{scripts/README-mumu.md}
+  & run order and explicit non-assumptions \\
+\texttt{scripts/generated/mumu\_naive\_Tij.txt}
+  & machine output included below \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Run from \texttt{scripts/}:
+\begin{verbatim}
+python3 mumu_gauge_check.py
+python3 mumu_naive_trace.py
+python3 mumu_gauge_check_squared.py
+\end{verbatim}
+
+\section{Generated term dump}
+\label{app:term-dump}
+
+The following file is produced by \texttt{mumu\_naive\_trace.py}. It is the
+authoritative listing of every $T_{ij}$ and of $S$; if the prose and this
+file disagree, the file wins after a clean re-run of the script.
+
+\lstinputlisting[
+  caption={Generated naive-trace dump
+    (\texttt{scripts/generated/mumu\_naive\_Tij.txt}).},
+  label={lst:naive-dump}
+]{../scripts/generated/mumu_naive_Tij.txt}
 
 \end{document}
