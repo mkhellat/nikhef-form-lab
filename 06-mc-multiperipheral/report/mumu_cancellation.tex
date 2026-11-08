@@ -502,16 +502,40 @@ make check    # must print PASS: ... Sg = 0
 make naive    # optional inspection of S
 \end{verbatim}
 
+\subsection{Naive $\equiv$ stable subreaction (3.5)}
+\label{sec:naive-eq-35}
+
+The stable Levi-Civita form of the $\gamma^*\gamma^*\to\mu^+\mu^-$
+\emph{subreaction} (before attaching electron currents) is formula~(3.5)
+of Nucl.\ Phys.\ B229 (1983) 347 --- preprint~(III.5). In that formula
+$Q=p_6-p_7$ (not $q_1+q_2$; the latter $Q$ appears in~(III.10)/(3.10)).
+The bracket $B=(q_1{\cdot}q_2)^2-(Q{\cdot}q_1)^2$ equals $D_1 D_2$ with the
+paper's $D_i$ identities under~(3.6).
+
+Script \texttt{scripts/mumu\_stable\_35\_check.py} evaluates~(3.5) with
+Minkowski Levi-Civita bilinears and compares to the Section~\ref{sec:naive}
+poly at the same kinematics. Over 50 physical-transverse and 50
+near-gauge random samples the two agree (relative error $<10^{-8}$, or
+absolute $<10^{-11}$ near the Ward zero). One overall sign in the scanned
+typesetting of the last two bilinears of~(3.5) was fixed by matching the
+naive poly (least-squares on the same samples); the other coefficients
+match the printed~(3.5) with $\tfrac14(\mathrm{Tr}[1{\cdot}2])^2$.
+\begin{verbatim}
+python3 scripts/mumu_stable_35_check.py   # must print PASS
+\end{verbatim}
+This is the machine identity between Section~\ref{sec:naive} and the
+paper's stable \emph{subreaction} form. It is not yet a transcription of
+the electron-dressed $M_{ij}$ of~(III.11).
+
 \subsection{What is not yet claimed}
 \label{sec:form-not-claimed}
 
-A term-by-term proof that the expanded $M_{ij}$ of formula~(III.11)
-equal the naive sum of Section~\ref{sec:naive} still requires a faithful
-FORM transcription of~(III.11) (and Appendix~C for $M_{12}$, $M_{21}$).
-That is the natural next FORM step; it is not silently asserted here.
-The Ward identity above is necessary for the stable construction and is
-now verified in FORM; it is not yet sufficient for full naive$\equiv$stable
-equality of the squared polynomials.
+A term-by-term FORM proof that the expanded $M_{ij}$ of formula~(III.11)
+equal the electron-dressed naive sum still requires a faithful
+transcription of~(III.11) (and Appendix~C for $M_{12}$, $M_{21}$). The
+Ward identity and the naive$\equiv$(3.5) subreaction check above close the
+$\gamma^*\gamma^*\to\mu^+\mu^-$ layer; they do not yet close the full
+$e^+e^-\to e^+e^-\mu^+\mu^-$ $M_{ij}$ layer.
 
 \section{Numerical demonstration of the cancellation}
 \label{sec:numerics}
@@ -683,10 +707,11 @@ near $e_1=q_1$ (Section~\ref{sec:numerics}), and the Monte Carlo fraction
 of bad points tracks proximity to that Ward surface rather than photon
 virtuality alone (Section~\ref{sec:mc}).
 
-What remains open for a full naive$\equiv$stable proof is a faithful
-FORM transcription of formula~(III.11) (and Appendix~C for $M_{12}$,
-$M_{21}$). The gauge premise and the numeric damage of ignoring it are
-already machine-checked.
+The $\gamma^*\gamma^*\to\mu^+\mu^-$ layer is closed:
+naive$\equiv$(3.5) (Section~\ref{sec:naive-eq-35}). What remains for the
+full $e^+e^-$ process is a faithful FORM transcription of~(III.11)
+(and Appendix~C for $M_{12}$, $M_{21}$). The gauge premise and the
+numeric damage of ignoring it are already machine-checked.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix

@@ -16,8 +16,8 @@ make check          # required
 make naive          # optional inspection of S
 ```
 
-Full algebraic identity between the naive sum and the paper’s
-`M_{ij}` (III.11) is not claimed by these files yet: that needs a
-faithful transcription of (III.11) into FORM. What is claimed is that
-the gauge premise of the stable route holds in FORM on the same
-squared-trace object Section 3 studied in Python.
+The naive ≡ paper (3.5) subreaction identity is checked numerically in
+`scripts/mumu_stable_35_check.py` (Levi-Civita bilinears; see report
+Sec. 5). A FORM transcription of the electron-dressed `M_{ij}` (III.11)
+is still open. What these FORM files claim is the squared Ward premise
+(`Sg = 0`) on the same object Section 3 studied in Python.
