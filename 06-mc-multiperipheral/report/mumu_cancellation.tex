@@ -512,14 +512,10 @@ $Q=p_6-p_7$ (not $q_1+q_2$; the latter $Q$ appears in~(III.10)/(3.10)).
 The bracket $B=(q_1{\cdot}q_2)^2-(Q{\cdot}q_1)^2$ equals $D_1 D_2$ with the
 paper's $D_i$ identities under~(3.6).
 
-Script \texttt{scripts/mumu\_stable\_35\_check.py} evaluates~(3.5) with
-Minkowski Levi-Civita bilinears and compares to the Section~\ref{sec:naive}
-poly at the same kinematics. Over 50 physical-transverse and 50
-near-gauge random samples the two agree (relative error $<10^{-8}$, or
-absolute $<10^{-11}$ near the Ward zero). One overall sign in the scanned
-typesetting of the last two bilinears of~(3.5) was fixed by matching the
-naive poly (least-squares on the same samples); the other coefficients
-match the printed~(3.5) with $\tfrac14(\mathrm{Tr}[1{\cdot}2])^2$.
+Script \texttt{scripts/mumu\_stable\_35\_check.py} evaluates~(3.5) and
+compares it to the Section~\ref{sec:naive} poly; Appendix~\ref{app:verify}
+records the transcribed formula, the $Q=p_6-p_7$ convention, the
+Levi-Civita identities, the scanned-sign correction, and the PASS gate.
 \begin{verbatim}
 python3 scripts/mumu_stable_35_check.py   # must print PASS
 \end{verbatim}
@@ -552,8 +548,8 @@ with $B=(q_1{\cdot}q_2)^2-(Q{\cdot}q_1)^2$ and $Q=p_6-p_7$. Script
   \text{ contracted with }
   L_{W_1}(q_1)\otimes L_{W_1}(q_2),
 \end{equation}
-where $L_{W_1}(q)=2q^2(g-qq/q^2)$ is the $W_1$ piece of~(3.8). Over 40
-random samples the relative error stays below $10^{-5}$.
+where $L_{W_1}(q)=2q^2(g-qq/q^2)$ is the $W_1$ piece of~(3.8). The
+contraction method and PASS threshold are in Appendix~\ref{app:verify}.
 \begin{verbatim}
 python3 scripts/mumu_mij_check.py   # must print PASS: M11/B^2 ...
 \end{verbatim}
@@ -855,6 +851,20 @@ file & role \\
   & Ward identity on $N$ (amplitude level) \\
 \texttt{scripts/mumu\_gauge\_check\_squared.py}
   & Ward identity on the squared-trace sum \\
+\texttt{scripts/mumu\_stable\_35\_check.py}
+  & naive $\equiv$ paper~(3.5); see Appendix~\ref{app:verify} \\
+\texttt{scripts/mumu\_mij\_check.py}
+  & $M_{11}/B^2\equiv W_1\otimes W_1$; see Appendix~\ref{app:verify} \\
+\texttt{scripts/emit\_naive\_poly\_c.py}
+  & emits \texttt{numeric/eval\_naive\_poly.h} for Secs.~\ref{sec:numerics}--\ref{sec:mc} \\
+\texttt{form/mumu\_ward.frm}
+  & FORM squared Ward (\texttt{Sg = 0}) \\
+\texttt{form/mumu\_naive.frm}
+  & FORM Trace4 baseline for the naive $N/\bar N$ split \\
+\texttt{numeric/digit\_loss\_naive.c}
+  & Sec.~\ref{sec:numerics} near-gauge $\delta$ ray \\
+\texttt{numeric/mc\_digit\_loss.c}
+  & Sec.~\ref{sec:mc} phys$\times\varepsilon$ / gauge$\times\delta$ fractions \\
 \texttt{scripts/README-mumu.md}
   & run order and explicit non-assumptions \\
 \texttt{scripts/generated/mumu\_naive\_Tij.txt}
@@ -869,7 +879,162 @@ Run from \texttt{scripts/}:
 python3 mumu_gauge_check.py
 python3 mumu_naive_trace.py
 python3 mumu_gauge_check_squared.py
+python3 mumu_stable_35_check.py
+python3 mumu_mij_check.py
 \end{verbatim}
+\noindent
+Plus \texttt{make -C form check}, \texttt{make -C numeric run}, and
+\texttt{make -C numeric mc}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Verification of (3.5) and $M_{11}$}
+\label{app:verify}
+
+Main-text Sections~\ref{sec:naive-eq-35} and~\ref{sec:M11-check} state the
+claims; this appendix is the detailed record of what was transcribed,
+what was corrected, and what the scripts actually test.
+
+\subsection{Two different $Q$'s in the paper}
+\label{app:Q-convention}
+
+Vermaseren uses the letter $Q$ in two incompatible ways:
+\begin{itemize}
+  \item In~(3.5)/(3.6) (subreaction $\gamma^*\gamma^*\to\mu^+\mu^-$),
+    $Q\equiv p_6-p_7$. Numerically,
+    $D_1 D_2=(q_1{\cdot}q_2)^2-(Q{\cdot}q_1)^2$ holds with that $Q$, and
+    $D_1=-q_1{\cdot}q_2-Q{\cdot}q_1$, $D_2=-q_1{\cdot}q_2+Q{\cdot}q_1$
+    reproduce $k_1^2-m^2$ and $k_2^2-m^2$.
+  \item In~(3.10)/(III.10) the same letter appears in the denominator
+    factor $(q_1{\cdot}q_2)^2-(Q{\cdot}q_1)^2$ with the structural reading
+    $Q=q_1+q_2$ used in Topic~6's denominator note. That identity is a
+    different algebraic object (asymmetric in $t_1$).
+\end{itemize}
+All checks in this appendix use $Q=p_6-p_7$, matching~(3.5) and the
+$M_{11}$ block as transcribed from Nucl.\ Phys.\ B229~(1983)~355--356.
+
+\subsection{Transcribed (3.5) used by the checker}
+\label{app:eq35-formula}
+
+With
+$\mathrm{Tr}[i{\cdot}j]=\varepsilon^{q_i e_i\mu\nu}\varepsilon_{q_j e_j\nu\mu}$,
+$Q{\cdot}1{\cdot}2{\cdot}Q=\varepsilon^{q_1 e_1 Q\mu}\varepsilon_{q_2 e_2\mu Q}$,
+and $B=(q_1{\cdot}q_2)^2-(Q{\cdot}q_1)^2$, the implementation is
+\begin{equation}
+\begin{aligned}
+  |{\cal M}|^2_{(3.5)}
+  &= B^{-2}\Big\{
+      8B\big(\tfrac14(\mathrm{Tr}[1{\cdot}2])^2
+            -\varepsilon^{q_1 e_1 q_2 e_2}\varepsilon_{q_1 e_1 q_2 e_2}\big) \\
+  &\quad
+      -2(Q{\cdot}q_1)^2\,\mathrm{Tr}[1{\cdot}1]\,\mathrm{Tr}[2{\cdot}2] \\
+  &\quad
+      -8\big(Q{\cdot}1{\cdot}2{\cdot}Q
+            -\tfrac12\mathrm{Tr}[1{\cdot}2](Q^2+q_1{\cdot}q_2)\big)^2 \\
+  &\quad
+      -\mathrm{Tr}[1{\cdot}1]
+        \big(\varepsilon^{q_2 e_2\alpha\beta}\varepsilon_{q_1 Q\alpha\beta}\big)^2 \\
+  &\quad
+      -\mathrm{Tr}[2{\cdot}2]
+        \big(\varepsilon^{q_1 e_1\alpha\beta}\varepsilon_{q_2 Q\alpha\beta}\big)^2
+    \Big\}.
+\end{aligned}
+\label{eq:35-implemented}
+\end{equation}
+Minkowski $(+---)$ reductions used in code (cross-checked against explicit
+index sums):
+\begin{align}
+  \mathrm{Tr}[i{\cdot}j]
+    &= 2\big((q_i{\cdot}q_j)(e_i{\cdot}e_j)-(q_i{\cdot}e_j)(e_i{\cdot}q_j)\big),
+    \label{eq:Tr-id} \\
+  \varepsilon^{abcd}\varepsilon_{abcd}
+    &= \det\!\big(G(a,b,c,d)\big),
+    \quad G_{ij}=v_i{\cdot}v_j,
+    \label{eq:eps4-id} \\
+  \varepsilon^{ab\mu\nu}\varepsilon_{cd\mu\nu}
+    &= -2\big((a{\cdot}c)(b{\cdot}d)-(a{\cdot}d)(b{\cdot}c)\big).
+    \label{eq:biline-id}
+\end{align}
+The chain $Q{\cdot}1{\cdot}2{\cdot}Q$ is the $3\times3$ Gram minor of
+$(q_1,e_1,Q)$ against $(q_2,e_2,Q)$.
+
+\subsection{Scanned-sign correction on the last two bilinears}
+\label{app:sign-fix}
+
+A literal reading of the scanned~(3.5) suggests overall \emph{plus} signs
+in front of the two $\mathrm{Tr}[i{\cdot}i](\varepsilon{\cdot}\varepsilon)^2$
+terms. Least-squares fitting of those six schematic coefficients against
+the naive poly on random samples returned
+\[
+  (2,\,-8,\,-2,\,-8,\,-1,\,-1)
+\]
+for
+$(\mathrm{Tr}_{12}^2,\,\varepsilon^4,\,\mathrm{Tr}_{11}\mathrm{Tr}_{22},\,
+(\cdots)^2,\,\mathrm{Tr}_{11}\varepsilon_2^2,\,\mathrm{Tr}_{22}\varepsilon_1^2)$,
+i.e.\ the printed $\tfrac14$ and the $-2$, $-8$ coefficients match, but
+the last two bilinears must be \emph{minus}. Equation~\eqref{eq:35-implemented}
+uses that correction. Without it, relative errors sit at the
+$10^{-3}$--$10^{-2}$ level; with it,
+\texttt{mumu\_stable\_35\_check.py} reports
+\texttt{PASS} (100 samples: 50 physical-transverse, 50 near-gauge;
+relative error $<10^{-8}$, or absolute $<10^{-11}$ near $S=0$).
+
+\subsection{$M_{11}/B^2\equiv W_1\otimes W_1$ method}
+\label{app:M11-method}
+
+The point-particle tensor~(3.8) splits into a $W_1$ piece
+$L_{W_1}=2q^2(g-qq/q^2)$ and a $W_2$ piece $8\,r_\mu r_\nu$. For the
+$M_{11}$ corner only $L_{W_1}$ is used on both photons. If
+$S(e_1,e_2)=H_{\mu\nu\rho\sigma}e_1^\mu e_1^\nu e_2^\rho e_2^\sigma$
+(schematically), the script recovers the quadratic form in each
+polarization by finite differences on the coordinate basis,
+\[
+  H_{\mu\nu}
+  =\begin{cases}
+     S(e_{(\mu)}) & \mu=\nu,\\
+     \tfrac12\big(S(e_{(\mu)}+e_{(\nu)})-S(e_{(\mu)})-S(e_{(\nu)})\big)
+       & \mu\neq\nu,
+   \end{cases}
+\]
+then contracts $H_{\mu\nu}L^{W_1\,\mu\nu}$. Nested in $e_1$ then $e_2$,
+that yields $S_{W_1W_1}$. The falsifiable identity is
+$M_{11}/B^2=S_{W_1W_1}$ (not $M_{11}/(q_1^2 q_2^2 B)^2$: the
+$(q_1^2 q_2^2)^2$ of~(3.10) is already carried by the $2q^2$ factors inside
+each $L_{W_1}$). PASS gate: relative error $<10^{-5}$ on 40 random
+multiperipheral samples (worst observed $\sim6\times10^{-6}$, from the
+finite-difference Hessian).
+
+\subsection{Inventory of falsifiable gates}
+\label{app:gates}
+
+\begin{center}
+\begin{tabular}{@{}llp{0.42\textwidth}@{}}
+\toprule
+gate & command & pass criterion \\
+\midrule
+amplitude Ward
+  & \texttt{python3 mumu\_gauge\_check.py}
+  & prints \texttt{ALL TERMS CANCEL} \\
+squared Ward (Python)
+  & \texttt{python3 mumu\_gauge\_check\_squared.py}
+  & prints \texttt{VANISHES} / exit 0 \\
+squared Ward (FORM)
+  & \texttt{make -C form check}
+  & prints \texttt{PASS: ... Sg = 0} \\
+naive $\equiv$(3.5)
+  & \texttt{python3 mumu\_stable\_35\_check.py}
+  & prints \texttt{PASS: naive = (3.5)...} \\
+$M_{11}\equiv W_1\otimes W_1$
+  & \texttt{python3 mumu\_mij\_check.py}
+  & prints \texttt{PASS: M11/B\^2...} \\
+digit-loss ray
+  & \texttt{make -C numeric run}
+  & digits fall with $\delta$ (Sec.~\ref{sec:numerics}) \\
+MC fraction
+  & \texttt{make -C numeric mc}
+  & phys $\mathrm{frac\_bad}=0$; gauge $\to1$ \\
+\bottomrule
+\end{tabular}
+\end{center}
 
 \section{Generated term dump}
 \label{app:term-dump}
