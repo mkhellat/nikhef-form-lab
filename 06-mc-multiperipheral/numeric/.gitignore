@@ -1,2 +1,3 @@
 digit_loss_naive
+mc_digit_loss
 *.o
