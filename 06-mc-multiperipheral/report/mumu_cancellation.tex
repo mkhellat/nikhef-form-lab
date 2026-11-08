@@ -466,13 +466,52 @@ double-$t$-channel kinematics.
     Section~\ref{sec:symbolic-check}.
 \end{enumerate}
 
-\section{Symbolic cross-check}
+\section{Symbolic cross-check (FORM)}
 \label{sec:symbolic-check}
 
-\emph{[To be filled in: machine verification that Sections~\ref{sec:naive}
-  and \ref{sec:stable} agree at generic symbolic kinematics. Prefer FORM
-  for the heavy Dirac / Schouten algebra; a thin cross-check against the
-  existing naive dump is enough to falsify disagreement.]}
+Section~\ref{sec:naive} used a Python Clifford contraction; this section
+reimplements the load-bearing identities in \textbf{FORM}, which is the
+right tool for Dirac traces at this scale (C is reserved for numeric
+digit-loss work in Section~\ref{sec:numerics}; a Rust CAS would not add
+domain leverage here).
+
+\subsection{What is checked}
+\label{sec:form-checked}
+
+\begin{enumerate}
+  \item \textbf{Squared Ward identity in FORM}
+    (\texttt{form/mumu\_ward.frm}).
+    Same non-trivial test as Section~\ref{sec:naive-checks}: substitute
+    $e_1\to q_1$ only in $N$ (diagram~1: $q_1=p_6-k_1$; diagram~2:
+    $q_1=p_7+k_2$), leave $\bar N$ physical, take
+    $\mathrm{Tr}[(\slashed p_6+m)N_g(\slashed p_7-m)\bar N]$, clear
+    $D_1^2 D_2^2$, set $D_i=k_i^2-m^2$, impose
+    $p_7=p_6-k_1-k_2$ and $p_6^2=m^2$. FORM prints
+    \texttt{Sg = 0}. This is the gauge premise of the stable route
+    (Section~\ref{sec:stable}), now machine-checked in FORM rather than
+    only in Python.
+  \item \textbf{Naive squared amplitude in FORM}
+    (\texttt{form/mumu\_naive.frm}).
+    Same $N$/$\bar N$ split as Section~\ref{sec:naive}, evaluated with
+    \texttt{Trace4}. Provides an independent FORM baseline for later
+    comparison to a transcribed~(III.11).
+\end{enumerate}
+Run from \texttt{form/}:
+\begin{verbatim}
+make check    # must print PASS: ... Sg = 0
+make naive    # optional inspection of S
+\end{verbatim}
+
+\subsection{What is not yet claimed}
+\label{sec:form-not-claimed}
+
+A term-by-term proof that the expanded $M_{ij}$ of formula~(III.11)
+equal the naive sum of Section~\ref{sec:naive} still requires a faithful
+FORM transcription of~(III.11) (and Appendix~C for $M_{12}$, $M_{21}$).
+That is the natural next FORM step; it is not silently asserted here.
+The Ward identity above is necessary for the stable construction and is
+now verified in FORM; it is not yet sufficient for full naive$\equiv$stable
+equality of the squared polynomials.
 
 \section{Numerical demonstration of the cancellation}
 \label{sec:numerics}
