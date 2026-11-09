@@ -554,9 +554,10 @@ This closes the electron-dressed~(III.11) layer against the naive poly.
 
 The checks above are numerical identities (finite-difference Hessian
 $\times$ transcribed $M_{ij}$), not a FORM/Schouten derivation of
-Appendix~C. A side-by-side IEEE digit-loss comparison of the naive poly
-against a stable $M_{ij}$ \emph{evaluator} in the Monte Carlo of
-Sections~\ref{sec:numerics}--\ref{sec:mc} is also still open.
+Appendix~C. Sections~\ref{sec:numerics}--\ref{sec:mc} now compare the
+naive poly to a C evaluator of the stable subreaction form~(3.5) on the
+same $\delta$-ray / MC ensembles; the electron-dressed $\sum M_{ij}$ C
+evaluator is gated by \texttt{make -C numeric check}.
 
 \section{Numerical demonstration of the cancellation}
 \label{sec:numerics}
@@ -587,9 +588,9 @@ The poly is the committed header
 \texttt{numeric/eval\_naive\_poly.h}, emitted from
 \texttt{scripts/emit\_naive\_poly\_c.py} (same sympy sum as
 Section~\ref{sec:naive}). The driver
-\texttt{numeric/digit\_loss\_naive.c} evaluates it once in \texttt{double}
-and once in \texttt{long double} at identical inputs and reports relative
-error and digits of agreement.
+\texttt{numeric/digit\_loss\_naive.c} evaluates it in \texttt{double} and
+\texttt{long double}, and the same kinematics through the C~(3.5)
+evaluator (\texttt{eval\_stable\_35.h}).
 
 \subsection{Scan}
 \label{sec:numerics-scan}
@@ -616,10 +617,12 @@ $10^{-7}$ & $5.4\times10^{-13}$ & $4.7\times10^{-14}$ & $\sim 10$ & $<0$ \\
 \end{center}
 Digits of agreement fall steadily as $\delta\to0$. By $\delta\sim10^{-7}$
 double and long double no longer even share a leading digit: the naive
-expanded route has lost the answer to cancellation noise. This is a
-concrete instance of Vermaseren's warning that substituting numerical
-4-vector products into a fully expanded expression is dangerous near the
-gauge / multiperipheral regime.
+expanded route has lost the answer to cancellation noise. On the same
+ray the~(3.5) value keeps falling toward zero (e.g.\ $|S_{(3.5)}|\sim10^{-20}$
+at $\delta=10^{-8}$) while the naive double saturates near $10^{-13}$.
+This is a concrete instance of Vermaseren's warning that substituting
+numerical 4-vector products into a fully expanded expression is dangerous
+near the gauge / multiperipheral regime.
 
 \subsection{What this section does and does not claim}
 \label{sec:numerics-claims}
@@ -629,11 +632,15 @@ gauge / multiperipheral regime.
     IEEE double near $e_1=q_1$ loses essentially all significant digits
     relative to the same poly in long double; the loss tracks the approach
     to the Ward zero.
-  \item \textbf{Not claimed here:} (i)~a side-by-side IEEE comparison of
-    the naive poly against a stable $M_{ij}$ \emph{evaluator} on this same
-    $\delta$-ray (the algebraic $M_{ij}\equiv W_i\otimes W_j$ gate is in
-    Section~\ref{sec:M11-check}); (ii)~a Monte Carlo fraction of
-    phase-space points that are ``bad'' (Section~\ref{sec:mc});
+  \item \textbf{Also claimed here:} side-by-side IEEE comparison of the
+    naive poly against the C~(3.5) evaluator on this $\delta$-ray
+    (\texttt{make -C numeric run}): as $\delta\to0$ the naive double value
+    saturates near $10^{-13}$ while~(3.5) continues toward zero.
+  \item \textbf{Not claimed here:} (i)~that relative double/long-double
+    digits of~(3.5) itself stay high all the way to $\delta=0$ (both
+    forms evaluate a quantity $\to0$, so relative digits dip; the
+    absolute-value story is the clean claim); (ii)~a Monte Carlo fraction
+    of phase-space points that are ``bad'' (Section~\ref{sec:mc});
     (iii)~that the near-gauge ray $e_1=q_1+\delta\hat x$ is identical to
     the physical $t_1,t_2\to0$ multiperipheral peak --- it is the cleanest
     probe of the same cancellation, not a full phase-space survey.
@@ -706,12 +713,15 @@ matching Section~\ref{sec:numerics} but now as a phase-space rate.
   \item \textbf{Claimed here:} for the naive 98-term poly, catastrophic
     double/long-double disagreement is a near-gauge phenomenon; its MC
     fraction tracks $\delta$, not $\varepsilon$.
+  \item \textbf{Also claimed here:} the same ensembles now report
+    \texttt{frac\_bad} for the C~(3.5) evaluator alongside the naive poly
+    (\texttt{make -C numeric mc}).
   \item \textbf{Not claimed here:} (i)~that the full $e^+e^-\to e^+e^-\mu^+\mu^-$
     Monte Carlo is free of peak-driven loss (electron-line currents can
     source effective longitudinal admixture near $t_1,t_2\to0$);
-    (ii)~a comparison to a stable $M_{ij}$ evaluator; (iii)~importance
-    sampling of the paper's multiperipheral weight --- this is a uniform
-    orientation probe of the poly, not a cross-section estimate.
+    (ii)~importance sampling of the paper's multiperipheral weight ---
+    this is a uniform orientation probe of the poly, not a cross-section
+    estimate.
 \end{enumerate}
 
 \section{Conclusion}
@@ -730,11 +740,13 @@ of bad points tracks proximity to that Ward surface rather than photon
 virtuality alone (Section~\ref{sec:mc}).
 
 The $\gamma^*\gamma^*\to\mu^+\mu^-$ layer is closed
-(naive$\equiv$(3.5), Section~\ref{sec:naive-eq-35}), and the full
+(naive$\equiv$(3.5), Section~\ref{sec:naive-eq-35}), the full
 electron-dressed~(III.11) sum $\sum_{ij}M_{ij}\equiv L\otimes L$ is
-checked corner-by-corner (Section~\ref{sec:M11-check}). The gauge premise
-and the numeric damage of ignoring it are machine-checked; what remains
-is wiring a stable $M_{ij}$ evaluator into the digit-loss / MC drivers.
+checked corner-by-corner (Section~\ref{sec:M11-check}), and C evaluators
+of~(3.5) and $\sum M_{ij}/B^2$ are wired into the digit-loss / MC drivers
+(\texttt{numeric/eval\_stable\_35.h}, \texttt{numeric/eval\_mij.h}). Optional
+later work: FORM/Schouten re-derivation of Appendix~C, or a genuine
+$2\to4$ multiperipheral driver.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
@@ -853,10 +865,16 @@ file & role \\
   & FORM squared Ward (\texttt{Sg = 0}) \\
 \texttt{form/mumu\_naive.frm}
   & FORM Trace4 baseline for the naive $N/\bar N$ split \\
+\texttt{numeric/eval\_stable\_35.h}
+  & C~(3.5) evaluator (double / long double) \\
+\texttt{numeric/eval\_mij.h}
+  & C $\sum M_{ij}/B^2$ evaluator \\
 \texttt{numeric/digit\_loss\_naive.c}
-  & Sec.~\ref{sec:numerics} near-gauge $\delta$ ray \\
+  & Sec.~\ref{sec:numerics} near-gauge $\delta$ ray (naive vs~(3.5)) \\
 \texttt{numeric/mc\_digit\_loss.c}
   & Sec.~\ref{sec:mc} phys$\times\varepsilon$ / gauge$\times\delta$ fractions \\
+\texttt{numeric/check\_stable\_c.c}
+  & fixed-kinematics C~(3.5)/$M_{ij}$ vs Python refs \\
 \texttt{scripts/README-mumu.md}
   & run order and explicit non-assumptions \\
 \texttt{scripts/generated/mumu\_naive\_Tij.txt}
@@ -1060,10 +1078,13 @@ $\sum M_{ij}\equiv L\otimes L$
   & prints \texttt{PASS: M\_ij/B\^2...} \\
 digit-loss ray
   & \texttt{make -C numeric run}
-  & digits fall with $\delta$ (Sec.~\ref{sec:numerics}) \\
+  & naive digits fall;~(3.5) keeps falling in $|S|$ \\
 MC fraction
   & \texttt{make -C numeric mc}
-  & phys $\mathrm{frac\_bad}=0$; gauge $\to1$ \\
+  & phys $\mathrm{frac\_bad}=0$; gauge naive $\to1$ \\
+C~(3.5)/$M_{ij}$ refs
+  & \texttt{make -C numeric check}
+  & prints \texttt{PASS: check\_stable\_c} \\
 \bottomrule
 \end{tabular}
 \end{center}

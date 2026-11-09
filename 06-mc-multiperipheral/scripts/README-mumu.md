@@ -22,8 +22,9 @@ Related (not in this folder):
 | Location | Role | Pass criterion |
 |---|---|---|
 | `form/` (`make check`) | FORM squared Ward | `PASS: ... Sg = 0` |
-| `numeric/` (`make run`) | Sec 6 digit-loss ray | digits fall with $\delta$ |
-| `numeric/` (`make mc`) | Sec 7 MC fractions | phys `frac_bad=0`; gauge → 1 |
+| `numeric/` (`make check`) | C (3.5) + $\sum M_{ij}$ vs Python refs | `PASS: check_stable_c` |
+| `numeric/` (`make run`) | Sec 6 digit-loss ray naive vs (3.5) | naive digits fall; (3.5) $|S|$ keeps falling |
+| `numeric/` (`make mc`) | Sec 7 MC fractions | phys `frac_bad=0`; gauge naive → 1 |
 
 Detailed transcription notes, the $Q=p_6-p_7$ convention, the (3.5)
 scanned-sign fix, the $M_{12}$/$M_{21}$ three-index $\varepsilon$
