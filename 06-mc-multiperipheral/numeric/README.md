@@ -14,15 +14,17 @@ for the report (including FORM/Python gates) lives in
 | `digit_loss_naive.c` | Sec 6: near-gauge δ scan naive vs (3.5) |
 | `mc_digit_loss.c` | Sec 7: MC frac_bad for naive and (3.5) |
 | `check_stable_c.c` | Fixed-kinematics gate: (3.5) and $M_{ij}$ vs Python refs |
-| `Makefile` | `make` / `make run` / `make mc` / `make check` / `make regen` |
+| `digit_loss_mij.c` | $\sum M_{ij}/B^2$ double vs LD vs $\cos\theta$ (mild) |
+| `Makefile` | `make` / `make run` / `make mc` / `make check` / `make mij` / `make regen` |
 
 ## Build and run
 
 ```bash
 make
 make check  # must print PASS: check_stable_c
-make run    # Section 6 ray
+make run    # Section 6 ray (naive vs (3.5))
 make mc     # Section 7 ensembles (N=5000 per bin)
+make mij    # ΣM_ij/B^2 digit-loss vs cosθ (must print PASS)
 ```
 
 ### Section 6 (`make run`)
@@ -50,8 +52,11 @@ and `frac_bad_35`. Expect:
 
 `eval_mij.h` evaluates $\sum M_{ij}/B^2$ (electron-dressed (3.11)). The
 Sec 6/7 drivers compare the *subreaction* object $S(e_1,e_2)$ for which
-(3.5) is the stable twin; $M_{ij}$ needs beam momenta $p_1,p_2$ and is
-gated by `make check` against the Python reference.
+(3.5) is the stable twin; $M_{ij}$ needs beam momenta $p_1,p_2$.
+
+- `make check` — fixed kinematics vs Python refs
+- `make mij` — double vs long-double digits across $\cos\theta$ at fixed
+  mild $\varepsilon$ (expect $\ge 8$ digits; no Ward-surface collapse)
 
 ## Regenerating the naive header
 

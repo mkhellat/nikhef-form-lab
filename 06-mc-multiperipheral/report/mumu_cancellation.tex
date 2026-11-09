@@ -553,11 +553,13 @@ This closes the electron-dressed~(III.11) layer against the naive poly.
 \label{sec:form-not-claimed}
 
 The checks above are numerical identities (finite-difference Hessian
-$\times$ transcribed $M_{ij}$), not a FORM/Schouten derivation of
-Appendix~C. Sections~\ref{sec:numerics}--\ref{sec:mc} now compare the
-naive poly to a C evaluator of the stable subreaction form~(3.5) on the
-same $\delta$-ray / MC ensembles; the electron-dressed $\sum M_{ij}$ C
-evaluator is gated by \texttt{make -C numeric check}.
+$\times$ transcribed $M_{ij}$), not a full FORM re-derivation of the
+Appendix~C chain~(C2)$\to$(C14). A FORM Appendix-C \emph{toolkit} gate
+(\texttt{mumu\_schouten\_c1.frm}: $\varepsilon\varepsilon$ normalization,
+biline structure, Schouten rewrite) is in \texttt{make -C form check}.
+Sections~\ref{sec:numerics}--\ref{sec:mc} compare the naive poly to a C
+evaluator of~(3.5); $\sum M_{ij}/B^2$ is gated by
+\texttt{make -C numeric check} / \texttt{make -C numeric mij}.
 
 \section{Numerical demonstration of the cancellation}
 \label{sec:numerics}
@@ -744,9 +746,9 @@ The $\gamma^*\gamma^*\to\mu^+\mu^-$ layer is closed
 electron-dressed~(III.11) sum $\sum_{ij}M_{ij}\equiv L\otimes L$ is
 checked corner-by-corner (Section~\ref{sec:M11-check}), and C evaluators
 of~(3.5) and $\sum M_{ij}/B^2$ are wired into the digit-loss / MC drivers
-(\texttt{numeric/eval\_stable\_35.h}, \texttt{numeric/eval\_mij.h}). Optional
-later work: FORM/Schouten re-derivation of Appendix~C, or a genuine
-$2\to4$ multiperipheral driver.
+(\texttt{numeric/eval\_stable\_35.h}, \texttt{numeric/eval\_mij.h}). Optional later work: full FORM reduction of Appendix~C
+through~(C14) for $M_{12}$/$M_{21}$, or a genuine $2\to4$ multiperipheral
+driver.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
@@ -1069,7 +1071,7 @@ squared Ward (Python)
   & prints \texttt{VANISHES} / exit 0 \\
 squared Ward (FORM)
   & \texttt{make -C form check}
-  & prints \texttt{PASS: ... Sg = 0} \\
+  & \texttt{Sg = 0} and Appendix-C toolkit PASS \\
 naive $\equiv$(3.5)
   & \texttt{python3 mumu\_stable\_35\_check.py}
   & prints \texttt{PASS: naive = (3.5)...} \\
@@ -1085,6 +1087,9 @@ MC fraction
 C~(3.5)/$M_{ij}$ refs
   & \texttt{make -C numeric check}
   & prints \texttt{PASS: check\_stable\_c} \\
+C $M_{ij}$ digits
+  & \texttt{make -C numeric mij}
+  & prints \texttt{PASS: digit\_loss\_mij} \\
 \bottomrule
 \end{tabular}
 \end{center}
