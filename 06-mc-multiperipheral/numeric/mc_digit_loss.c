@@ -1,25 +1,20 @@
 /*
- * Monte Carlo digit-loss fraction for the naive 98-term poly
+ * Monte Carlo digit-loss fraction: naive 98-term poly vs stable (3.5)
  * (report/mumu_cancellation.tex Section 7).
  *
  * Two scans, same random muon / polarization angles:
  *
  *   phys × eps   — transverse e1,e2; bin by photon virtuality eps
- *                  (q1^2=q2^2=-eps). Multiperipheral peak = eps→0.
- *                  Expected: frac_bad ≈ 0 (peak alone does not break
- *                  this subsystem poly).
- *
- *   gauge × delta — e1 = q1 + delta * e_T (e_T random transverse);
- *                  fixed mild eps. Bin by delta→0 (Ward surface).
- *                  Expected: frac_bad → 1 (Section 6 mechanism,
- *                  now as a phase-space fraction).
+ *   gauge × delta — e1 = q1 + delta * e_T; fixed mild eps
  *
  * "Bad" = digits_agree(double, long double) < BAD_DIGITS.
+ * Reports frac_bad for naive and for (3.5) separately.
  *
  * Build: make mc && ./mc_digit_loss
  */
 
 #include "eval_naive_poly.h"
+#include "eval_stable_35.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -140,7 +135,8 @@ static double digits_agree(double Sd, long double Sl)
  * mode 1: e1 = q1 + delta * e_T  (near gauge); e2 transverse
  */
 static void sample_point(double W, double eps, double delta, double m, int mode,
-			 Dots *d, Dotsl *dl)
+			 Dots *d, Dotsl *dl, V4 *q1, V4 *q2, V4 *e1, V4 *e2,
+			 V4 *Q, V4l *q1l, V4l *q2l, V4l *e1l, V4l *e2l, V4l *Ql)
 {
 	double E = W / 2.0;
 	double qz = sqrt(E * E + eps);
@@ -150,17 +146,17 @@ static void sample_point(double W, double eps, double delta, double m, int mode,
 	double sth = sqrt(fmax(0.0, 1.0 - cth * cth));
 	double psi = 2.0 * M_PI * urand();
 	double chi = 2.0 * M_PI * urand();
-	vec4 q1 = {{E, 0, 0, qz}};
-	vec4 q2 = {{E, 0, 0, -qz}};
-	vec4 p6 = {{E, p * sth * cos(phi), p * sth * sin(phi), p * cth}};
-	vec4 p7 = {{E, -p6.e[1], -p6.e[2], -p6.e[3]}};
-	vec4 k1 = {{p6.e[0] - q1.e[0], p6.e[1] - q1.e[1], p6.e[2] - q1.e[2],
-		    p6.e[3] - q1.e[3]}};
-	vec4 k2 = {{p6.e[0] - q2.e[0], p6.e[1] - q2.e[1], p6.e[2] - q2.e[2],
-		    p6.e[3] - q2.e[3]}};
+	vec4 vq1 = {{E, 0, 0, qz}};
+	vec4 vq2 = {{E, 0, 0, -qz}};
+	vec4 vp6 = {{E, p * sth * cos(phi), p * sth * sin(phi), p * cth}};
+	vec4 vp7 = {{E, -vp6.e[1], -vp6.e[2], -vp6.e[3]}};
+	vec4 vk1 = {{vp6.e[0] - vq1.e[0], vp6.e[1] - vq1.e[1],
+		     vp6.e[2] - vq1.e[2], vp6.e[3] - vq1.e[3]}};
+	vec4 vk2 = {{vp6.e[0] - vq2.e[0], vp6.e[1] - vq2.e[1],
+		     vp6.e[2] - vq2.e[2], vp6.e[3] - vq2.e[3]}};
 	vec4 ex = {{0, 1, 0, 0}};
 	vec4 ey = {{0, 0, 1, 0}};
-	vec4 e1t, e2t, e1, e2, tmp;
+	vec4 e1t, e2t, ve1, ve2, tmp, vQ;
 
 	vscale(&e1t, &ex, cos(psi));
 	vscale(&tmp, &ey, sin(psi));
@@ -171,15 +167,31 @@ static void sample_point(double W, double eps, double delta, double m, int mode,
 	vadd(&e2t, &e2t, &tmp);
 
 	if (mode == 0) {
-		e1 = e1t;
-		e2 = e2t;
+		ve1 = e1t;
+		ve2 = e2t;
 	} else {
 		vscale(&tmp, &e1t, delta);
-		vadd(&e1, &q1, &tmp);
-		e2 = e2t;
+		vadd(&ve1, &vq1, &tmp);
+		ve2 = e2t;
 	}
+	vQ.e[0] = vp6.e[0] - vp7.e[0];
+	vQ.e[1] = vp6.e[1] - vp7.e[1];
+	vQ.e[2] = vp6.e[2] - vp7.e[2];
+	vQ.e[3] = vp6.e[3] - vp7.e[3];
 
-	fill_from_vectors(&e1, &e2, &k1, &k2, &p6, &p7, m, d, dl);
+	fill_from_vectors(&ve1, &ve2, &vk1, &vk2, &vp6, &vp7, m, d, dl);
+	for (int i = 0; i < 4; i++) {
+		q1->e[i] = vq1.e[i];
+		q2->e[i] = vq2.e[i];
+		e1->e[i] = ve1.e[i];
+		e2->e[i] = ve2.e[i];
+		Q->e[i] = vQ.e[i];
+	}
+	v4_to_l(q1l, q1);
+	v4_to_l(q2l, q2);
+	v4_to_l(e1l, e1);
+	v4_to_l(e2l, e2);
+	v4_to_l(Ql, Q);
 }
 
 static void run_scan(const char *name, int mode, const double *bins, int n_bins,
@@ -188,44 +200,51 @@ static void run_scan(const char *name, int mode, const double *bins, int n_bins,
 {
 	Dots d;
 	Dotsl dl;
+	V4 q1, q2, e1, e2, Q;
+	V4l q1l, q2l, e1l, e2l, Ql;
 
 	printf("# ensemble=%s  mode=%d  N=%d  bad_if_digits<%.1f\n", name, mode,
 	       n, BAD_DIGITS);
 	if (mode == 0)
-		printf("# (phys) bin=eps  fixed_delta unused; e1,e2 transverse\n");
+		printf("# (phys) bin=eps  e1,e2 transverse\n");
 	else
 		printf("# (gauge) bin=delta  fixed_eps=%.3e; e1=q1+delta*e_T\n",
 		       fixed_eps);
-	printf("# bin  n_bad  frac_bad  mean_digits  min_digits\n");
+	printf("# bin  frac_bad_naive  frac_bad_35  mean_dig_n  mean_dig_35\n");
 
 	for (int ib = 0; ib < n_bins; ib++) {
 		double bin = bins[ib];
 		double eps = (mode == 0) ? bin : fixed_eps;
 		double delta = (mode == 0) ? fixed_delta : bin;
-		int n_bad = 0;
-		double sum_digits = 0.0;
-		double min_digits = 99.0;
+		int n_bad_n = 0, n_bad_35 = 0;
+		double sum_n = 0.0, sum_35 = 0.0;
 
 		rng_state = 0xC0FFEE1234ULL ^
 			    (uint64_t)(ib + 1 + 17 * mode) * 0x9E3779B97F4A7C15ULL;
 
 		for (int i = 0; i < n; i++) {
-			double Sd, dig;
-			long double Sl;
+			double Sd, S35d, dig_n, dig_35;
+			long double Sl, S35l;
 
-			sample_point(W, eps, delta, m, mode, &d, &dl);
+			sample_point(W, eps, delta, m, mode, &d, &dl, &q1, &q2,
+				     &e1, &e2, &Q, &q1l, &q2l, &e1l, &e2l, &Ql);
 			Sd = eval_naive_poly(&d);
 			Sl = eval_naive_poly_l(&dl);
-			dig = digits_agree(Sd, Sl);
-			sum_digits += dig;
-			if (dig < min_digits)
-				min_digits = dig;
-			if (dig < BAD_DIGITS)
-				n_bad++;
+			S35d = eval_stable_35(&q1, &q2, &e1, &e2, &Q);
+			S35l = eval_stable_35_l(&q1l, &q2l, &e1l, &e2l, &Ql);
+			dig_n = digits_agree(Sd, Sl);
+			dig_35 = digits_agree(S35d, S35l);
+			sum_n += dig_n;
+			sum_35 += dig_35;
+			if (dig_n < BAD_DIGITS)
+				n_bad_n++;
+			if (dig_35 < BAD_DIGITS)
+				n_bad_35++;
 		}
-		printf("%.3e  %d  %.4f  %.2f  %.2f\n", bin, n_bad,
-		       (double)n_bad / (double)n, sum_digits / (double)n,
-		       min_digits);
+		printf("%.3e  %.4f  %.4f  %.2f  %.2f\n", bin,
+		       (double)n_bad_n / (double)n,
+		       (double)n_bad_35 / (double)n, sum_n / (double)n,
+		       sum_35 / (double)n);
 	}
 	printf("#\n");
 }
@@ -243,7 +262,7 @@ int main(void)
 	const int n_eps = (int)(sizeof eps_bins / sizeof eps_bins[0]);
 	const int n_delta = (int)(sizeof delta_bins / sizeof delta_bins[0]);
 
-	printf("# mc_digit_loss: fraction of naive-poly points with digit loss\n");
+	printf("# mc_digit_loss: naive poly vs stable (3.5) digit-loss fractions\n");
 	printf("# W=%.3f  m=%.6f  (q1^2=q2^2=-eps)\n", W, m);
 
 	run_scan("phys_vs_eps", 0, eps_bins, n_eps, 0.0, 0.0, W, m, n);
