@@ -38,9 +38,9 @@ enough ground is covered.
 - [Topic 6: the muon-pair "super formulae" for $\gamma^*\gamma^*\to\mu^+\mu^-$](notes/topic6-muon-pair-super-formulae.md)
   — the harder, two-diagram case Vermaseren's method actually exists for,
   from a separate 1982 paper (`twophoton.pdf`); walks formula (III.3)
-  through (III.11) via Appendix C's Schouten-identity reductions; no
-  vendored driver exists for this reaction, so verification here is
-  symbolic only (and caught one incorrect claim in an earlier draft).
+  through (III.11). Cancellation report + scripts now machine-check
+  naive≡(3.5) and full $M_{ij}\equiv W_i\otimes W_j$ against the naive
+  poly; still no vendored $2\to4$ phase-space driver like `pi0.c`.
 
 ## Open questions not yet filed into a topic
 

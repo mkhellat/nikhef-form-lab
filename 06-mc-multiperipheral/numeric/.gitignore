@@ -1,3 +1,4 @@
 digit_loss_naive
 mc_digit_loss
+check_stable_c
 *.o
