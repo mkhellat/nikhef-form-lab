@@ -136,32 +136,26 @@ naming pattern `pi0.c` uses for Gram-determinant/minor pieces) and found no
 matches anywhere — confirming this simpler archive genuinely does not carry
 an implementation of formula (III.5)/(III.10)/(III.11).
 
-**So this topic's derivation is grounded directly in the paper's own
-formulae and its Appendix C reduction identities, not cross-checked against
-a driver the way Topics 4/5 cross-checked `pi0.c`.** That is an honest
-difference in verification depth from the earlier topics, not glossed over:
-Topics 4/5's Gram-minor and $s$-scaling claims were checked both
-symbolically *and* numerically against running vendored code; this topic's
-$M_{11}$–$M_{22}$ structure has been checked only symbolically (the
-denominator identity above) and by matching the paper's own internal
-consistency statements (III.9's $W_1=W_2=1$ point-particle normalization,
-III.11's dimensional/index structure). No numerical driver for this reaction
-exists in the repository to check the $M_{ij}$ formulae against directly.
+**Relative to Topics 4/5:** there is still no vendored `pickin`/`orient`-style
+$2\to4$ phase-space driver for this reaction (the $\pi^0$ path in `kinc2/`
+does not cover it). The algebraic $M_{ij}$ layer is no longer
+paper-authority-only: the cancellation report's Python gates check
+naive ≡ (3.5) and each $M_{ij}/B^2$ ≡ $W_i\otimes W_j$(naive) (plus
+$\sum M_{ij}$ ≡ $L\otimes L$) via `scripts/mumu_stable_35_check.py` and
+`scripts/mumu_mij_check.py`. That is a different verification path from
+Topics 4/5 (dressed naive poly, not a kinc2 MC driver).
 
 ### Open threads / not yet resolved
 
-- The $M_{11}$–$M_{22}$ formulae (III.11) have not been checked numerically
-  against a running implementation — none exists in this repository or the
-  vendored archives — only symbolically, and only for the denominator
-  structure, not the full numerator reduction chain (C1)→(C13)/(C14).
 - Appendix C's derivation chain (C2)→(C14) has been read and structurally
   summarized here, but not independently re-derived term-by-term the way
   Topic 4's Gram-minor claim was (there, a from-scratch symbolic
   verification in `scripts/gram_minors_pi0.py` reproduced the claim
   independently of the paper's own algebra; here, the reduction identities
-  are taken on the paper's authority, cross-checked only for
-  self-consistency of the final formula, not re-derived from the Schouten
-  identity from scratch).
+  are taken on the paper's authority for the *derivation*, while the
+  *final* $M_{ij}$ blocks are checked numerically against the naive poly).
+- Side-by-side IEEE digit-loss of a stable $M_{ij}$ evaluator vs the naive
+  poly in the C MC drivers is still open (algebraic gate is closed).
 - Writing an actual `pickin`/`orient`-style driver for this reaction (a
   genuine $2\to4$ process, $e^-e^+\to e^-e^+\mu^-\mu^+$, one order more
   complex than the $\pi^0$'s $2\to3$) was explicitly out of scope here and
