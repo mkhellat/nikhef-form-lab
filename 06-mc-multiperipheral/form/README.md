@@ -12,11 +12,13 @@ Rust would not buy domain leverage here.
 | `mumu_ward.frm` | Squared Ward identity (`e1→q1` on `N` only) | prints `Sg = 0;` |
 | `mumu_naive.frm` | Naive spin-summed `\|M\|^2` via `Trace4` | runs; FORM baseline |
 | `mumu_schouten_c1.frm` | Appendix-C toolkit: εε norm, biline, Schouten rewrite | `NnormCheck=Biline=SchCheck=0` |
-| `Makefile` | `make check` = Ward + Schouten toolkit | exit 0 |
+| `mumu_schouten_c2_c14.frm` | App-C reductions (C.4)/(C.8)/(C.9)/(C.13)/(C.14) for $M_{12}$/$M_{21}$ | `DiffC4…DiffC14=0` |
+| `Makefile` | `make check` = Ward + C1 toolkit + C2–C14 reductions | exit 0 |
 
 ```bash
-make check          # required (Ward + Appendix-C toolkit)
+make check          # required (Ward + App-C toolkit + App-C reductions)
 make schouten       # Appendix-C toolkit only
+make appC           # (C.4)/(C.8)/(C.9)/(C.13)/(C.14) only
 make naive          # optional inspection of S
 ```
 
@@ -26,8 +28,18 @@ make naive          # optional inspection of S
   `(+---)` helper in Python uses an overall minus relative to FORM for
   the two-epsilon biline (`+2*(…)` in FORM vs `-2*(…)` in Python).
 - The Schouten (C1) gate installs a rewrite procedure and checks it
-  applies (`SchCheck=0`). It does **not** independently re-derive the
-  full (C2)→(C14) chain for $M_{12}$/$M_{21}$ — that remains optional.
+  applies (`SchCheck=0`).
+- `mumu_schouten_c2_c14.frm` contracts the multi-epsilon chains twice
+  (Dimension 4) and checks the load-bearing reductions for $M_{12}$/$M_{21}$:
+  - (C.4)/(C.7), (C.8), (C.9) with paper coefficients once `Q·1·2·R` is
+    written `e_(q1,e1,Q,m)*e_(q2,e2,R,m)` (the `…,m,R` order flips (C.4)
+    to −½).
+  - (C.13) needs the extra `¼(ε^{q1 e1 αβ}ε_{Q q2 αβ})²` term; FORM locks
+    the Tr[1·1] prefactor at +½ (paper scan −½).
+  - (C.14) locks with the Tr[1·1] brace sign flipped relative to the
+    paper scan.
+- This is still **not** a full FORM transcription of the $M_{ij}$
+  polynomials — only the App-C identities those reductions rest on.
 
 ## What is / is not claimed here
 
@@ -35,8 +47,10 @@ make naive          # optional inspection of S
   squared-trace object Section 3 studied in Python.
 - **Claimed:** Appendix-C Levi-Civita normalization + biline structure +
   Schouten rewrite procedure (`make schouten`).
+- **Claimed:** FORM verification of App-C (C.4)/(C.8)/(C.9)/(C.13)/(C.14)
+  (`make appC`).
 - **Claimed elsewhere (Python/C):** naive ≡ paper (3.5); $\sum M_{ij}/B^2$ ≡
   $L\otimes L$(naive). See report appendix “Verification of (3.5) and
   $M_{ij}$”.
 - **Not claimed here:** full FORM transcription of the $M_{ij}$ blocks
-  via the complete Appendix-C reduction chain.
+  themselves (only the App-C identities used to reach them).
