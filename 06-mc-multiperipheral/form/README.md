@@ -2,23 +2,26 @@
 
 Architecture choice for Section 5: **FORM**, not Python/C/Rust.
 Dirac traces are what FORM is for; C owns numeric digit-loss
-(Sections 6–7); the (3.5)/$M_{ij}$ identities are checked in Python
-(`scripts/mumu_stable_35_check.py`, `scripts/mumu_mij_check.py`) because
-they need Levi-Civita bilinears against the already-generated naive poly.
-Rust would not buy domain leverage here.
+(Sections 6–7); the (3.5)/$M_{ij}$ *numeric* identities are checked in
+Python (`scripts/mumu_stable_35_check.py`, `scripts/mumu_mij_check.py`)
+because they need Levi-Civita bilinears against the already-generated
+naive poly. FORM owns the symbolic App-C reductions and the $M_{ij}$
+Levi-Civita↔poly transcription.
 
 | File | Role | Pass criterion |
 |---|---|---|
 | `mumu_ward.frm` | Squared Ward identity (`e1→q1` on `N` only) | prints `Sg = 0;` |
 | `mumu_naive.frm` | Naive spin-summed `\|M\|^2` via `Trace4` | runs; FORM baseline |
 | `mumu_schouten_c1.frm` | Appendix-C toolkit: εε norm, biline, Schouten rewrite | `NnormCheck=Biline=SchCheck=0` |
-| `mumu_schouten_c2_c14.frm` | App-C reductions (C.4)/(C.8)/(C.9)/(C.13)/(C.14) for $M_{12}$/$M_{21}$ | `DiffC4…DiffC14=0` |
-| `Makefile` | `make check` = Ward + C1 toolkit + C2–C14 reductions | exit 0 |
+| `mumu_schouten_c2_c14.frm` | App-C reductions (C.4)/(C.8)/(C.9)/(C.13)/(C.14) | `DiffC4…DiffC14=0` |
+| `mumu_mij.frm` | (3.11) $M_{ij}$ Levi-Civita form vs closed poly | `DiffM11…DiffM22=0` |
+| `Makefile` | `make check` = Ward + App-C + $M_{ij}$ | exit 0 |
 
 ```bash
-make check          # required (Ward + App-C toolkit + App-C reductions)
+make check          # Ward + schouten + appC + mij
 make schouten       # Appendix-C toolkit only
 make appC           # (C.4)/(C.8)/(C.9)/(C.13)/(C.14) only
+make mij            # (3.11) M_ij transcription only
 make naive          # optional inspection of S
 ```
 
@@ -38,8 +41,15 @@ make naive          # optional inspection of S
     the Tr[1·1] prefactor at +½ (paper scan −½).
   - (C.14) locks with the Tr[1·1] brace sign flipped relative to the
     paper scan.
-- This is still **not** a full FORM transcription of the $M_{ij}$
-  polynomials — only the App-C identities those reductions rest on.
+
+## $M_{ij}$ transcription notes
+
+`mumu_mij.frm` writes each $M_{ij}$ as a Levi-Civita `*lc` expression
+and as a closed `*poly` (matching `eval_mij.h` / the report). Locked map:
+
+- `Tr` matches Python/C; FORM biline $= -$ Python biline; `eps3sq` $=$
+  $-$ FORM three-index `e_*e_`; Python `chain3` $= -$ FORM
+  `e_(p1,q1,Q,m)*e_(p2,q2,m,Q)`; four-index `e_*e_` $=$ det Gram.
 
 ## What is / is not claimed here
 
@@ -49,8 +59,8 @@ make naive          # optional inspection of S
   Schouten rewrite procedure (`make schouten`).
 - **Claimed:** FORM verification of App-C (C.4)/(C.8)/(C.9)/(C.13)/(C.14)
   (`make appC`).
+- **Claimed:** FORM $M_{ij}$ Levi-Civita ↔ poly transcription
+  (`make mij`).
 - **Claimed elsewhere (Python/C):** naive ≡ paper (3.5); $\sum M_{ij}/B^2$ ≡
   $L\otimes L$(naive). See report appendix “Verification of (3.5) and
   $M_{ij}$”.
-- **Not claimed here:** full FORM transcription of the $M_{ij}$ blocks
-  themselves (only the App-C identities used to reach them).

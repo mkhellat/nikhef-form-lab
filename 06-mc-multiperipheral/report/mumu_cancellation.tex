@@ -553,14 +553,13 @@ This closes the electron-dressed~(III.11) layer against the naive poly.
 \label{sec:form-not-claimed}
 
 The checks above are numerical identities (finite-difference Hessian
-$\times$ transcribed $M_{ij}$), not a full FORM transcription of the
-$M_{ij}$ polynomials themselves. FORM does gate the Appendix~C identities
-those reductions rest on: the~(C1) toolkit
-(\texttt{mumu\_schouten\_c1.frm}: $\varepsilon\varepsilon$ normalization,
-biline structure, Schouten rewrite) and the load-bearing reductions
-(C.4)/(C.8)/(C.9)/(C.13)/(C.14) for $M_{12}$/$M_{21}$
-(\texttt{mumu\_schouten\_c2\_c14.frm}; \texttt{make -C form appC}, also
-part of \texttt{make -C form check}). Sections~\ref{sec:numerics}--\ref{sec:mc}
+$\times$ transcribed $M_{ij}$). FORM gates the Appendix~C identities and
+the $M_{ij}$ Levi-Civita$\leftrightarrow$poly transcription: the~(C1)
+toolkit (\texttt{mumu\_schouten\_c1.frm}), the load-bearing reductions
+(C.4)/(C.8)/(C.9)/(C.13)/(C.14)
+(\texttt{mumu\_schouten\_c2\_c14.frm}; \texttt{make -C form appC}), and
+\texttt{mumu\_mij.frm} (\texttt{make -C form mij}; all four
+$\mathrm{Diff}M_{ij}=0$). Sections~\ref{sec:numerics}--\ref{sec:mc}
 compare the naive poly to a C evaluator of~(3.5); $\sum M_{ij}/B^2$ is
 gated by \texttt{make -C numeric check} / \texttt{make -C numeric mij}.
 
@@ -755,8 +754,9 @@ FORM Appendix~C reductions~(C.4)/(C.8)/(C.9)/(C.13)/(C.14) are gated by
 gate (\texttt{gamgam}/\texttt{peripp} vs $\sum M_{ij}$ on soft $|t|$
 samples) is \texttt{make -C kinc2-driver check-eemm}; digit-loss of
 $\sum M_{ij}/B^2$ vs L$\otimes$L(naive) on the same gamgam samples is
-\texttt{make -C kinc2-driver digit-loss-eemm}. Optional later work: a
-full FORM transcription of the $M_{ij}$ blocks themselves.
+\texttt{make -C kinc2-driver digit-loss-eemm}. FORM transcription of the
+$M_{ij}$ Levi-Civita forms vs their closed polynomials is
+\texttt{make -C form mij}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
@@ -879,6 +879,8 @@ file & role \\
   & App-C toolkit ($\varepsilon\varepsilon$, biline, Schouten rewrite) \\
 \texttt{form/mumu\_schouten\_c2\_c14.frm}
   & App-C (C.4)/(C.8)/(C.9)/(C.13)/(C.14) for $M_{12}$/$M_{21}$ \\
+\texttt{form/mumu\_mij.frm}
+  & (3.11) $M_{ij}$ Levi-Civita form vs closed poly \\
 \texttt{numeric/eval\_stable\_35.h}
   & C~(3.5) evaluator (double / long double) \\
 \texttt{numeric/eval\_mij.h}
@@ -1083,7 +1085,7 @@ squared Ward (Python)
   & prints \texttt{VANISHES} / exit 0 \\
 squared Ward (FORM)
   & \texttt{make -C form check}
-  & \texttt{Sg = 0} and Appendix-C toolkit PASS \\
+  & \texttt{Sg = 0}, App-C, and $M_{ij}$ Diff PASS \\
 naive $\equiv$(3.5)
   & \texttt{python3 mumu\_stable\_35\_check.py}
   & prints \texttt{PASS: naive = (3.5)...} \\

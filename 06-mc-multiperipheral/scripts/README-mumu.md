@@ -21,7 +21,7 @@ Related (not in this folder):
 
 | Location | Role | Pass criterion |
 |---|---|---|
-| `form/` (`make check`) | FORM Ward + App-C toolkit + (C.4)–(C.14) | `PASS: ... Sg = 0` + schouten + appC |
+| `form/` (`make check`) | FORM Ward + App-C + $M_{ij}$ transcription | `PASS: Sg=0` + schouten + appC + mij |
 | `kinc2-driver/` (`make check`) | 2→4 gamgam/peripp + ΣMij digit-loss | `PASS: check_eemm` + `digit_loss_eemm` |
 | `numeric/` (`make check`) | C (3.5) + $\sum M_{ij}$ vs Python refs | `PASS: check_stable_c` |
 | `numeric/` (`make run`) | Sec 6 digit-loss ray naive vs (3.5) | naive digits fall; (3.5) $|S|$ keeps falling |

@@ -146,9 +146,8 @@ Python/C (`scripts/mumu_stable_35_check.py`, `scripts/mumu_mij_check.py`).
 
 ### Open threads / not yet resolved
 
-- Appendix C (C2)→(C14) identities are FORM-gated
-  (`form/mumu_schouten_c2_c14.frm`); a full FORM transcription of the
-  $M_{ij}$ *polynomials* themselves is still optional.
+- Appendix C (C2)→(C14) and the $M_{ij}$ Levi-Civita↔poly transcription
+  are FORM-gated (`make -C form appC`, `make -C form mij`).
 - Digit-loss of $\sum M_{ij}/B^2$ vs L⊗L(naive) on gamgam samples is
   gated by `make -C kinc2-driver digit-loss-eemm` (soft $|t|$ keeps
   `dig_mij` healthy while the dressed-naive path collapses).
