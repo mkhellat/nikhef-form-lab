@@ -5,8 +5,9 @@ WARD = mumu_ward.frm
 NAIVE = mumu_naive.frm
 SCHOUTEN = mumu_schouten_c1.frm
 APPC = mumu_schouten_c2_c14.frm
+MIJ = mumu_mij.frm
 
-.PHONY: all check ward naive schouten appC clean
+.PHONY: all check ward naive schouten appC mij clean
 
 all: check
 
@@ -54,7 +55,26 @@ appC:
 	  exit 1; \
 	fi
 
-check: $(WARD) $(SCHOUTEN) $(APPC)
+# (3.11) M_ij: Levi-Civita form vs closed poly (eval_mij / report).
+mij:
+	@out=$$(mktemp); \
+	$(FORM) $(MIJ) > $$out 2>&1; \
+	ok=1; \
+	grep -qE '^[[:space:]]+DiffM11 = 0;' $$out || ok=0; \
+	grep -qE '^[[:space:]]+DiffM12 = 0;' $$out || ok=0; \
+	grep -qE '^[[:space:]]+DiffM21 = 0;' $$out || ok=0; \
+	grep -qE '^[[:space:]]+DiffM22 = 0;' $$out || ok=0; \
+	if [ $$ok -eq 1 ]; then \
+	  echo "PASS: mumu_mij.frm"; \
+	  rm -f $$out; \
+	else \
+	  echo "FAIL: expected DiffM11=DiffM12=DiffM21=DiffM22=0;" >&2; \
+	  sed -n '1,200p' $$out >&2; \
+	  rm -f $$out; \
+	  exit 1; \
+	fi
+
+check: $(WARD) $(SCHOUTEN) $(APPC) $(MIJ)
 	@out=$$(mktemp); \
 	$(FORM) $(WARD) > $$out 2>&1; \
 	if grep -q 'Sg = 0;' $$out; then \
@@ -68,6 +88,7 @@ check: $(WARD) $(SCHOUTEN) $(APPC)
 	fi
 	@$(MAKE) --no-print-directory schouten
 	@$(MAKE) --no-print-directory appC
+	@$(MAKE) --no-print-directory mij
 
 clean:
 	rm -f *.log
