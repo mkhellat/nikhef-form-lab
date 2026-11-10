@@ -1,2 +1,5 @@
 *.o
 kinc2-driver/scan_pi0_scaling
+kinc2-driver/check_gram_minors
+kinc2-driver/mc_xsec_s_scan
+kinc2-driver/check_eemm_gamgam
