@@ -1,6 +1,11 @@
 *.o
+build/
 kinc2-driver/scan_pi0_scaling
 kinc2-driver/check_gram_minors
 kinc2-driver/mc_xsec_s_scan
 kinc2-driver/check_eemm_gamgam
 kinc2-driver/digit_loss_eemm_gamgam
+numeric/check_stable_c
+numeric/digit_loss_mij
+numeric/digit_loss_naive
+numeric/mc_digit_loss
