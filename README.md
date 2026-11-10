@@ -18,3 +18,8 @@ pipeline for VEGAS multi-dimensional integratopn
 using mapping techniques
 
 [05-cs-e-e+_gg](05-cs-e-e+_gg) - calculation of $e^- e^+ \to \gamma \gamma$ scattering cross-section
+
+[06-mc-multiperipheral](06-mc-multiperipheral) - multiperipheral
+kinematics / muon-pair cancellation report; CMake+CTest gates under
+`06-mc-multiperipheral/` (see `README-cmake.md`), CI workflow
+`.github/workflows/cmake-multiplatform.yml`

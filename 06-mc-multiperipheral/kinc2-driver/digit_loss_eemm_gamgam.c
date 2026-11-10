@@ -23,6 +23,7 @@
 #include "eval_mij.h"
 #include "eval_naive_poly.h"
 
+#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -306,6 +307,16 @@ int main(void)
 	printf("# digit_loss_eemm_gamgam: ΣMij/B^2 vs L⊗L(naive) on gamgam\n");
 	printf("# ebeam=%.3f  mmu=%.6f  N_TRIALS=%d  bad_if_digits<%.1f\n",
 	       ebeam, mmu, N_TRIALS, BAD_DIGITS);
+
+	/* MSVC (and some ABIs) make long double the same width as double;
+	   then dig_dressed cannot demonstrate collapse vs dig_mij. */
+	if (LDBL_MANT_DIG <= DBL_MANT_DIG) {
+		printf("# SKIP: long double not wider than double "
+		       "(LDBL_MANT_DIG=%d DBL_MANT_DIG=%d)\n",
+		       (int)LDBL_MANT_DIG, (int)DBL_MANT_DIG);
+		printf("PASS: digit_loss_eemm_gamgam (skipped LD compare)\n");
+		return 0;
+	}
 	printf("# bin_lo  bin_hi  n  frac_bad_mij  frac_bad_dr  "
 	       "mean_dig_mij  mean_dig_dr  mean_agree_dig\n");
 

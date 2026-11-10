@@ -24,6 +24,7 @@ Related (not in this folder):
 | `form/` (`make check`) | FORM Ward + App-C + $M_{ij}$ transcription | `PASS: Sg=0` + schouten + appC + mij |
 | `kinc2-driver/` (`make check`) | 2→4 gamgam/peripp + ΣMij digit-loss | `PASS: check_eemm` + `digit_loss_eemm` |
 | `numeric/` (`make check`) | C (3.5) + $\sum M_{ij}$ vs Python refs | `PASS: check_stable_c` |
+| topic `CMakeLists.txt` + GHA | multi-platform CMake/CTest | `ctest` 4 gates on ubuntu/macOS/Windows |
 | `numeric/` (`make run`) | Sec 6 digit-loss ray naive vs (3.5) | naive digits fall; (3.5) $|S|$ keeps falling |
 | `numeric/` (`make mc`) | Sec 7 MC fractions | phys `frac_bad=0`; gauge naive → 1 |
 
