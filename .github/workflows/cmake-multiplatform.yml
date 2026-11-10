@@ -1,0 +1,54 @@
+# Multi-platform CMake build + CTest for Topic 6 C gates.
+# Requires a real CMake project under 06-mc-multiperipheral/ (not empty CI).
+
+name: cmake-multiplatform
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "06-mc-multiperipheral/CMakeLists.txt"
+      - "06-mc-multiperipheral/numeric/**"
+      - "06-mc-multiperipheral/kinc2/**"
+      - "06-mc-multiperipheral/kinc2-driver/**"
+      - ".github/workflows/cmake-multiplatform.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "06-mc-multiperipheral/CMakeLists.txt"
+      - "06-mc-multiperipheral/numeric/**"
+      - "06-mc-multiperipheral/kinc2/**"
+      - "06-mc-multiperipheral/kinc2-driver/**"
+      - ".github/workflows/cmake-multiplatform.yml"
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure (Unix)
+        if: runner.os != 'Windows'
+        working-directory: 06-mc-multiperipheral
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        working-directory: 06-mc-multiperipheral
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        working-directory: 06-mc-multiperipheral
+        run: cmake --build build --config Release
+
+      - name: Test
+        working-directory: 06-mc-multiperipheral
+        run: ctest --test-dir build -C Release --output-on-failure
