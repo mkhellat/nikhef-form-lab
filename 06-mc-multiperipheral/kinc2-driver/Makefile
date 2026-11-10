@@ -15,20 +15,28 @@ KINC2_COMMON = \
 	$(KINC2)/iipow.c \
 	$(KINC2)/ranf.c
 
-.PHONY: all check check-eemm clean \
+.PHONY: all check check-eemm digit-loss-eemm clean \
 	scan_pi0_scaling check_gram_minors mc_xsec_s_scan
 
-all: check-eemm
+all: check
 
-check: check-eemm
+check: check-eemm digit-loss-eemm
 
 check-eemm: check_eemm_gamgam
 	./check_eemm_gamgam
+
+digit-loss-eemm: digit_loss_eemm_gamgam
+	./digit_loss_eemm_gamgam
 
 check_eemm_gamgam: check_eemm_gamgam.c $(KINC2_COMMON) $(KINC2)/gamgam.c $(KINC2)/peripp.c
 	$(CC) $(CFLAGS) -I$(KINC2) -I$(NUMERIC) -o $@ \
 		check_eemm_gamgam.c $(KINC2_COMMON) \
 		$(KINC2)/gamgam.c $(KINC2)/peripp.c -lm
+
+digit_loss_eemm_gamgam: digit_loss_eemm_gamgam.c $(KINC2_COMMON) $(KINC2)/gamgam.c
+	$(CC) $(CFLAGS) -O2 -I$(KINC2) -I$(NUMERIC) -o $@ \
+		digit_loss_eemm_gamgam.c $(KINC2_COMMON) \
+		$(KINC2)/gamgam.c -lm
 
 scan_pi0_scaling: scan_pi0_scaling.c $(KINC2_COMMON) $(KINC2)/pi0.c
 	$(CC) $(CFLAGS) -I$(KINC2) -o $@ \
@@ -43,4 +51,5 @@ mc_xsec_s_scan: mc_xsec_s_scan.c $(KINC2_COMMON) $(KINC2)/pi0.c
 		mc_xsec_s_scan.c $(KINC2_COMMON) $(KINC2)/pi0.c -lm
 
 clean:
-	rm -f check_eemm_gamgam scan_pi0_scaling check_gram_minors mc_xsec_s_scan *.o
+	rm -f check_eemm_gamgam digit_loss_eemm_gamgam \
+		scan_pi0_scaling check_gram_minors mc_xsec_s_scan *.o
