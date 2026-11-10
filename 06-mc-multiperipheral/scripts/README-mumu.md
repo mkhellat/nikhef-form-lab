@@ -22,6 +22,7 @@ Related (not in this folder):
 | Location | Role | Pass criterion |
 |---|---|---|
 | `form/` (`make check`) | FORM Ward + App-C toolkit + (C.4)–(C.14) | `PASS: ... Sg = 0` + schouten + appC |
+| `kinc2-driver/` (`make check`) | 2→4 gamgam/peripp + ΣMij digit-loss | `PASS: check_eemm` + `digit_loss_eemm` |
 | `numeric/` (`make check`) | C (3.5) + $\sum M_{ij}$ vs Python refs | `PASS: check_stable_c` |
 | `numeric/` (`make run`) | Sec 6 digit-loss ray naive vs (3.5) | naive digits fall; (3.5) $|S|$ keeps falling |
 | `numeric/` (`make mc`) | Sec 7 MC fractions | phys `frac_bad=0`; gauge naive → 1 |
@@ -43,10 +44,11 @@ python3 mumu_gauge_check_squared.py
 python3 mumu_stable_35_check.py
 python3 mumu_mij_check.py
 
-# FORM + numeric (from repo topic dir)
+# FORM + numeric + 2→4 kinc2 (from repo topic dir)
 make -C ../form check
 make -C ../numeric run
 make -C ../numeric mc
+make -C ../kinc2-driver check
 ```
 
 If you change `mumu_trace_lib.py`, re-run the Section 3 trio and both
