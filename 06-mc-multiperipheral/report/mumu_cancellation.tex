@@ -751,9 +751,11 @@ checked corner-by-corner (Section~\ref{sec:M11-check}), and C evaluators
 of~(3.5) and $\sum M_{ij}/B^2$ are wired into the digit-loss / MC drivers
 (\texttt{numeric/eval\_stable\_35.h}, \texttt{numeric/eval\_mij.h}).
 FORM Appendix~C reductions~(C.4)/(C.8)/(C.9)/(C.13)/(C.14) are gated by
-\texttt{make -C form appC}. Optional later work: a genuine $2\to4$
-multiperipheral driver, or a full FORM transcription of the $M_{ij}$
-blocks themselves.
+\texttt{make -C form appC}. A genuine $2\to4$ multiperipheral kinematics
+gate (\texttt{gamgam}/\texttt{peripp} vs $\sum M_{ij}$ on soft $|t|$
+samples) is \texttt{make -C kinc2-driver check-eemm}. Optional later
+work: a full FORM transcription of the $M_{ij}$ blocks themselves, or
+digit-loss of $\sum M_{ij}$ on gamgam-sampled points.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix

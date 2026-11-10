@@ -110,11 +110,13 @@ not one.
 
 ### What the vendored code does and doesn't cover
 
-This directory's `kinc2/` subset — `pickin.c`, `orient.c`, `pi0.c`,
-`mapt.c`/`mapw.c`/`mapla.c` — implements only the $\pi^0$ ($2\to3$,
-double-t-channel via $\ln(-t)$-mapping) case used in Topics 0–5. There is
-**no vendored code for the muon-pair matrix element** (III.5)/(III.10)/(III.11)
-in this repository, and it should not be assumed to exist.
+This directory's `kinc2/` subset vendors the $\pi^0$ ($2\to3$) path
+(`pickin`/`orient`/`pi0`) used in Topics 0–5 **and** the muon-pair
+($2\to4$) kinematics/ME path (`gamgam.c`, `peripp.c`) used by
+`kinc2-driver/check_eemm_gamgam.c`. The algebraic (III.5)/(III.11) layer
+is still checked in Python/C (`scripts/mumu_*`, `numeric/eval_*.h`);
+`peripp` is the paper's own multiperipheral $|M|^2$ evaluator that the
+2→4 gate compares against $\sum M_{ij}$ on soft samples.
 
 Checked directly against the separate, un-vendored `kinc.tar.gz` archive (a
 different, simpler bundle than `kinc2.tar.gz`, extracted read-only to
@@ -136,28 +138,17 @@ naming pattern `pi0.c` uses for Gram-determinant/minor pieces) and found no
 matches anywhere — confirming this simpler archive genuinely does not carry
 an implementation of formula (III.5)/(III.10)/(III.11).
 
-**Relative to Topics 4/5:** there is still no vendored `pickin`/`orient`-style
-$2\to4$ phase-space driver for this reaction (the $\pi^0$ path in `kinc2/`
-does not cover it). The algebraic $M_{ij}$ layer is no longer
-paper-authority-only: the cancellation report's Python gates check
-naive ≡ (3.5) and each $M_{ij}/B^2$ ≡ $W_i\otimes W_j$(naive) (plus
-$\sum M_{ij}$ ≡ $L\otimes L$) via `scripts/mumu_stable_35_check.py` and
-`scripts/mumu_mij_check.py`. That is a different verification path from
-Topics 4/5 (dressed naive poly, not a kinc2 MC driver).
+**Relative to Topics 4/5:** the $2\to4$ kinematics loop is now closed the
+same way Topic 4 closed Gram minors — `make -C kinc2-driver check-eemm`
+runs real `gamgam`/`peripp` and compares soft-$|t|$ samples to our
+transcribed $\sum M_{ij}$. The algebraic $M_{ij}$ layer remains gated in
+Python/C (`scripts/mumu_stable_35_check.py`, `scripts/mumu_mij_check.py`).
 
 ### Open threads / not yet resolved
 
-- Appendix C's derivation chain (C2)→(C14) has been read and structurally
-  summarized here, but not independently re-derived term-by-term the way
-  Topic 4's Gram-minor claim was (there, a from-scratch symbolic
-  verification in `scripts/gram_minors_pi0.py` reproduced the claim
-  independently of the paper's own algebra; here, the reduction identities
-  are taken on the paper's authority for the *derivation*, while the
-  *final* $M_{ij}$ blocks are checked numerically against the naive poly).
-- Side-by-side IEEE digit-loss of a stable $M_{ij}$ evaluator vs the naive
-  poly in the C MC drivers is still open (algebraic gate is closed).
-- Writing an actual `pickin`/`orient`-style driver for this reaction (a
-  genuine $2\to4$ process, $e^-e^+\to e^-e^+\mu^-\mu^+$, one order more
-  complex than the $\pi^0$'s $2\to3$) was explicitly out of scope here and
-  remains undone — it is the natural "close the loop" step if this thread is
-  picked up again, mirroring what `check_gram_minors.c` did for Topic 4.
+- Appendix C (C2)→(C14) identities are FORM-gated
+  (`form/mumu_schouten_c2_c14.frm`); a full FORM transcription of the
+  $M_{ij}$ *polynomials* themselves is still optional.
+- Side-by-side IEEE digit-loss of $\sum M_{ij}$ vs the naive poly on
+  *gamgam-sampled* (not synthetic) kinematics is a natural follow-on to
+  `check_eemm_gamgam` / `numeric/mc_digit_loss`.

@@ -18,11 +18,11 @@ relevant, to the primary sources the lecture cites (Vermaseren 1983;
 Byckling & Kajantie, *Particle Kinematics*, 1973; Byers & Yang,
 *Rev. Mod. Phys.* 36 (1964) 595); [`scripts/`](scripts/), standalone
 Python checks of specific combinatorial/graph-theoretic claims;
-[`kinc2/`](kinc2/), the subset of the vendored reference implementation
-needed to build the one non-Python check so far,
-[`kinc2-driver/scan_pi0_scaling.c`](kinc2-driver/scan_pi0_scaling.c), a
-driver that instruments the real `pickin`/`orient`/`pi0` code directly
-(see Topic 5 below). This file summarizes the conclusions settled so
+[`kinc2/`](kinc2/), the vendored reference subset (`pickin`/`orient`/`pi0`
+for $2\to3$, plus `gamgam`/`peripp` for $2\to4$); and
+[`kinc2-driver/`](kinc2-driver/), drivers that instrument that code
+directly — including `make -C kinc2-driver check-eemm` for the muon-pair
+reaction (see Topic 6). This file summarizes the conclusions settled so
 far.
 
 ### Tree diagrams and loops, defined rigorously
