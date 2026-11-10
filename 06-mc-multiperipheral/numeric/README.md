@@ -16,6 +16,7 @@ for the report (including FORM/Python gates) lives in
 | `check_stable_c.c` | Fixed-kinematics gate: (3.5) and $M_{ij}$ vs Python refs |
 | `digit_loss_mij.c` | $\sum M_{ij}/B^2$ double vs LD vs $\cos\theta$ (mild) |
 | `Makefile` | `make` / `make run` / `make mc` / `make check` / `make mij` / `make regen` |
+| `../CMakeLists.txt` | portable CMake + CTest (CI multi-platform) | see `../README-cmake.md` |
 
 ## Build and run
 
@@ -25,6 +26,9 @@ make check  # must print PASS: check_stable_c
 make run    # Section 6 ray (naive vs (3.5))
 make mc     # Section 7 ensembles (N=5000 per bin)
 make mij    # ΣM_ij/B^2 digit-loss vs cosθ (must print PASS)
+
+# Portable / CI path (also builds kinc2-driver gates):
+cmake -S .. -B ../build && cmake --build ../build && ctest --test-dir ../build --output-on-failure
 ```
 
 ### Section 6 (`make run`)

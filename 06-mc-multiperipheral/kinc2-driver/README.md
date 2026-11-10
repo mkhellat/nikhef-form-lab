@@ -17,6 +17,10 @@ rather than reimplementing them.
 make check            # check-eemm + digit-loss-eemm
 make check-eemm       # kinematics + peripp ↔ ΣMij
 make digit-loss-eemm  # dig_mij vs dig_dressed vs |t|
+
+# Portable / CI (from topic root):
+cmake -S .. -B ../build && cmake --build ../build
+ctest --test-dir ../build --output-on-failure
 ```
 
 `check_eemm_gamgam` reconstructs lab 4-momenta from `VARIAB`/`VARIAD`,
