@@ -39,15 +39,25 @@ were to be completely evaluated in the standard fashion -- i.e.\ expressing
 it completely in terms of 4-vector products and then substituting their
 numerical values for each Monte Carlo generated point in phase space --
 then the cancellations between the various terms would be so bad that even
-the 60 bit accuracy of a CDC computer would not suffice.'' This report
-reproduces that claim end to end for the two-photon subprocess
-$\gamma^*\gamma^*\to\mu^+\mu^-$: deriving the squared matrix element by hand
-via the naive (``standard fashion'') route and via Vermaseren's
-Schouten-identity-stabilized route, cross-checking both derivations
-symbolically, and then evaluating both forms numerically in IEEE double
-precision at kinematic points approaching the multiperipheral peak
-($t_1,t_2\to0$) to measure directly how many significant digits are lost
-in the naive route.
+the 60 bit accuracy of a CDC computer would not suffice.'' We take that
+statement as given and ask how much of it can be reproduced for the
+isolated two-photon subprocess $\gamma^*\gamma^*\to\mu^+\mu^-$.
+
+What we do reproduce: the squared matrix element by the naive
+(``standard fashion'') route and by Vermaseren's Schouten-identity /
+Levi-Civita-stabilized route~(3.5); symbolic identity of the two;
+IEEE double digit-loss of the naive 98-term poly against long double
+and against~(3.5); and the electron-dressed~(III.11) layer
+($\sum M_{ij}\equiv L\otimes L$, including FORM transcription and a
+\texttt{gamgam}/\texttt{peripp} gate).
+
+Limitation (not a revision of Vermaseren): for free photon polarizations
+on the subprocess poly alone, catastrophic double/long-double loss tracks
+the Ward surface $e_1\to q_1$, not soft virtuality $t_1,t_2\to0$ by itself
+(physical-transverse MC stays healthy down to $\varepsilon=10^{-12}$).
+Soft-$|t|$ collapse of a dressed L$\otimes$L(naive) path versus
+$\sum M_{ij}$ appears on real $2\to4$ \texttt{gamgam} samples. We do not
+claim a full PETRA/LEP $e^+e^-$ Monte Carlo with CDC-era arithmetic.
 \end{abstract}
 
 \tableofcontents
@@ -62,10 +72,10 @@ matrix-element core of the full $e^+e^-\to e^+e^-\mu^+\mu^-$ two-photon
 process (Fig.~1 of the same paper): the electron and positron each radiate
 a virtual photon ($q_1$, $q_2$), which then fuse via muon exchange into the
 $\mu^+\mu^-$ pair. The electron/positron lines and the two photon
-propagators $1/q_1^2,\,1/q_2^2$ are common to both diagrams and are not the
-source of the numerical instability discussed here; the instability lives
-entirely in the $\gamma^*\gamma^*\to\mu^+\mu^-$ subprocess itself, so we
-isolate it.
+propagators $1/q_1^2,\,1/q_2^2$ are common to both diagrams; the
+cancellations Vermaseren warns about live in the squared
+$\gamma^*\gamma^*\to\mu^+\mu^-$ matrix element, so we isolate that
+subprocess first and treat the dressed $e^+e^-$ layer separately.
 
 There are exactly two tree diagrams, differing by which photon attaches to
 the muon line first:
@@ -731,32 +741,29 @@ matching Section~\ref{sec:numerics} but now as a phase-space rate.
 \section{Conclusion}
 \label{sec:conclusion}
 
-Vermaseren's warning is concrete for
-$\gamma^*\gamma^*\to\mu^+\mu^-$. Expanding $|{\cal M}|^2$ into 4-vector
-products yields a 98-term polynomial
-(Section~\ref{sec:naive}) whose Ward identity holds in both Python and
-FORM (Sections~\ref{sec:naive-checks},~\ref{sec:symbolic-check}). The
-stable Appendix-C /~(III.10) route hides that cancellation in
-$\varepsilon$-tensor structure (Section~\ref{sec:stable}). Numerically,
-IEEE double evaluation of the naive poly loses essentially all digits
-near $e_1=q_1$ (Section~\ref{sec:numerics}), and the Monte Carlo fraction
-of bad points tracks proximity to that Ward surface rather than photon
-virtuality alone (Section~\ref{sec:mc}).
+Vermaseren's warning stands as written; this report does not amend it.
+What we establish for the isolated subprocess
+$\gamma^*\gamma^*\to\mu^+\mu^-$ is that the naive expansion into
+4-vector products (98-term poly, Section~\ref{sec:naive}) and the
+Schouten-stabilized route~(3.5) are symbolically identical, that the
+Ward identity holds in Python and FORM
+(Sections~\ref{sec:naive-checks},~\ref{sec:symbolic-check}), and that
+IEEE double evaluation of the naive poly can lose essentially all
+digits relative to long double and to~(3.5)
+(Section~\ref{sec:numerics}).
 
-The $\gamma^*\gamma^*\to\mu^+\mu^-$ layer is closed
-(naive$\equiv$(3.5), Section~\ref{sec:naive-eq-35}), the full
-electron-dressed~(III.11) sum $\sum_{ij}M_{ij}\equiv L\otimes L$ is
-checked corner-by-corner (Section~\ref{sec:M11-check}), and C evaluators
-of~(3.5) and $\sum M_{ij}/B^2$ are wired into the digit-loss / MC drivers
-(\texttt{numeric/eval\_stable\_35.h}, \texttt{numeric/eval\_mij.h}).
-FORM Appendix~C reductions~(C.4)/(C.8)/(C.9)/(C.13)/(C.14) are gated by
-\texttt{make -C form appC}. A genuine $2\to4$ multiperipheral kinematics
-gate (\texttt{gamgam}/\texttt{peripp} vs $\sum M_{ij}$ on soft $|t|$
-samples) is \texttt{make -C kinc2-driver check-eemm}; digit-loss of
-$\sum M_{ij}/B^2$ vs L$\otimes$L(naive) on the same gamgam samples is
-\texttt{make -C kinc2-driver digit-loss-eemm}. FORM transcription of the
-$M_{ij}$ Levi-Civita forms vs their closed polynomials is
-\texttt{make -C form mij}.
+The limitation is where that loss appears for free polarizations:
+Monte Carlo fractions track the Ward surface $e_1\to q_1$, not soft
+$t_1,t_2\to0$ alone (Section~\ref{sec:mc}). Soft-$|t|$ digit-loss of
+dressed L$\otimes$L(naive) versus $\sum M_{ij}$ is seen on
+\texttt{gamgam} samples (\texttt{make -C kinc2-driver digit-loss-eemm}).
+Neither replaces a full $e^+e^-\to e^+e^-\mu^+\mu^-$ generator under
+CDC-era arithmetic.
+
+The algebraic and tooling layers around that finding are closed:
+naive$\equiv$(3.5); $\sum_{ij}M_{ij}\equiv L\otimes L$; C evaluators in
+the digit-loss / MC drivers; FORM App-C and $M_{ij}$ transcription;
+\texttt{gamgam}/\texttt{peripp} kinematics gate.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
