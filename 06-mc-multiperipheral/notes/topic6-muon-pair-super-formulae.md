@@ -159,6 +159,10 @@ Python/C (`scripts/mumu_stable_35_check.py`, `scripts/mumu_mij_check.py`).
   integrates `dj*|M|^2/(2s)` with the stable ΣMᵢⱼ backend and no
   minimum-`|t|` cut. `make -C kinc2-driver digit-loss-eemm-cdc`
   puts the CDC-60 naive Hessian on the same gamgam samples: soft
-  `frac_bad` is high while ΣMᵢⱼ stays healthy. This is a C
-  soft-float of the 60-bit one's-complement format, not a DtCyber
-  or COMPASS run, and not a revision of Vermaseren's quote.
+  `frac_bad` is high while ΣMᵢⱼ stays healthy. Those Hessian numbers
+  are the host soft-float. A separate FTN5 case vector on DtCyber
+  (`make -C cdc_fp check`) matches the 48-bit coefficients and the
+  signed-zero words; nonzero characteristics are the 6600
+  one's-complement form (normalized +1 is 1720 octal, not the host
+  2001 octal word). That is not a COMPASS run, not a NOS execution
+  of the integral, and not a revision of Vermaseren's quote.
