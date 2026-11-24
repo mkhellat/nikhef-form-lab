@@ -13,17 +13,22 @@ truncating (chop toward zero). There is no rounding bit, no CDC
 double-precision word, and no COMPASS microcode. Pack/unpack against
 host `double` is only the boundary; the arithmetic itself stays on the
 60-bit word. Overflow becomes a non-numeric pattern (characteristic
-2047, coefficient 0). This is not a DtCyber run and not a claim that
-the bit patterns match a 6600 adder cycle for cycle.
+2047, coefficient 0). The stored characteristic is excess-1024 on
+`E + 48`, so normalized +1 is octal `20014000000000000000`. A 6600
+one's-complement characteristic of the same coefficient is 1720 octal.
+`validation/` records an FTN5 cross-check of that difference. This is
+not a cycle-accurate 6600 adder.
 
 ```bash
 make -C 06-mc-multiperipheral/cdc_fp check
 ```
 
 prints `PASS: cdc_fp`, then `PASS: cdc_fp_oracle_cases`,
-`PASS: cdc_fp_oracle_known`, and `PASS: cdc_fp_oracle`. The same run
-also compares a fresh dump to `validation/cyber_results.txt` when that
-file exists. Without it the line is
+`PASS: cdc_fp_oracle_known`, `PASS: cdc_fp_oracle`, and
+`PASS: cdc_fp_cyber_extract`. The same run compares a fresh dump to
+`validation/cyber_results.txt`. With that file the line is
+`PASS: cdc_fp_cyber (coeff match, characteristic one's-complement)`.
+Without it the line is
 `PASS: cdc_fp_cyber (skipped, no cyber_results.txt)`.
 
 `make oracle` writes the case vector to stdout (`CDC_FP_ORACLE 1`,

@@ -5,8 +5,10 @@ Host smoke compares two dumps (typically a fresh oracle run against
 validation/host_expected.txt) on the 20-digit octal result word.
 --check-known recomputes the excess-1024 packing of the exact cases
 and does not trust the C library. --cyber compares a host dump to a
-DtCyber FTN5 listing extract; a missing Cyber file is a skip, not a
-failure.
+DtCyber FTN5 listing extract. A missing Cyber file is a skip. A
+present file passes when each result is the same 48-bit coefficient
+under the 6600 one's-complement characteristic (normalized +1 is
+1720 octal, not the host 2001 octal word).
 
 Exit 0 prints a PASS line. Exit 1 prints FAIL lines.
 """
@@ -239,6 +241,39 @@ def check_cases(path):
     return fails
 
 
+def host_to_cdc_word(host_word):
+    """6600 characteristic of a host excess-1024 word.
+
+    The host stores value = coeff * 2^(X - 1024 - 48), so the integer
+    coefficient's exponent is E = X - 1072. A 6600 characteristic is
+    that exponent in one's complement with the sign bit complemented:
+    E + 1024 when E >= 0, and E + 1023 when E < 0. Normalized +1 has
+    E = -47 and characteristic 976 (1720 octal), 49 below the host
+    word. +0 and -0 are left unchanged. A negative word is the one's
+    complement of the positive image.
+    """
+    host_word &= MASK60
+    if host_word in (0, MASK60):
+        return host_word
+    sign = host_word >> 59
+    mag = ((~host_word) & MASK60) if sign else host_word
+    char = (mag >> COEFF_BITS) & 0x7FF
+    coeff = mag & ((1 << COEFF_BITS) - 1)
+    if coeff == 0:
+        return host_word
+    exponent = char - BIAS - COEFF_BITS
+    if exponent < 0:
+        cdc_char = exponent + (BIAS - 1)
+    else:
+        cdc_char = exponent + BIAS
+    if cdc_char <= 0 or cdc_char >= 2047:
+        raise ValueError(f"characteristic out of range: {cdc_char}")
+    out = ((cdc_char << COEFF_BITS) | coeff) & MASK60
+    if sign:
+        out = (~out) & MASK60
+    return out
+
+
 def cyber_compare(oracle_path, cyber_path):
     try:
         open(cyber_path, "r", encoding="utf-8").close()
@@ -250,11 +285,45 @@ def cyber_compare(oracle_path, cyber_path):
         return 0
     _ok, _ov, oracle_rows = parse_dump(oracle_path)
     _ck, _cv, cyber_rows = parse_dump(cyber_path)
-    fails = compare_rows(oracle_path, oracle_rows, cyber_path, cyber_rows)
+    host = index_rows(oracle_rows, oracle_path)
+    cyber = index_rows(cyber_rows, cyber_path)
+    fails = 0
+    if set(host) != set(cyber):
+        missing = sorted(set(host) - set(cyber))
+        extra = sorted(set(cyber) - set(host))
+        if missing:
+            print(f"FAIL: ids missing from {cyber_path}: {' '.join(missing)}")
+            fails += 1
+        if extra:
+            print(f"FAIL: ids only in {cyber_path}: {' '.join(extra)}")
+            fails += 1
+    n_char = 0
+    for ident in host:
+        if ident not in cyber:
+            continue
+        got = int(cyber[ident]["oct"], 8)
+        src = int(host[ident]["oct"], 8)
+        if got == src:
+            continue
+        want = host_to_cdc_word(src)
+        if got == want:
+            n_char += 1
+            continue
+        print(
+            f"FAIL: {ident} host={host[ident]['oct']} "
+            f"cdc={oct20(want)} cyber={cyber[ident]['oct']}"
+        )
+        fails += 1
     if fails:
         print(f"FAIL: cdc_fp_cyber ({fails})")
         return 1
-    print("PASS: cdc_fp_cyber")
+    if n_char:
+        print(
+            "PASS: cdc_fp_cyber "
+            "(coeff match, characteristic one's-complement)"
+        )
+    else:
+        print("PASS: cdc_fp_cyber")
     return 0
 
 
