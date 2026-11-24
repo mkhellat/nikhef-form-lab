@@ -154,6 +154,11 @@ Python/C (`scripts/mumu_stable_35_check.py`, `scripts/mumu_mij_check.py`).
 - The matching MC `frac_bad` *rate* (soft/mid/hard $t_{\max}$,
   Section 7 style) is gated by
   `make -C kinc2-driver mc-digit-loss-eemm`. Soft dressed `frac_bad`
-  is high and mij `frac_bad` is low. This closes the dressed
-  soft-$|t|$ MC-rate half; it is still not a full PETRA VEGAS +
-  CDC-60-bit generator.
+  is high and mij `frac_bad` is low.
+- Host VEGAS at 15 GeV (`make -C eemm check`, `PASS: eemm_vegas`)
+  integrates `dj*|M|^2/(2s)` with the stable ΣMᵢⱼ backend and no
+  minimum-`|t|` cut. `make -C kinc2-driver digit-loss-eemm-cdc`
+  puts the CDC-60 naive Hessian on the same gamgam samples: soft
+  `frac_bad` is high while ΣMᵢⱼ stays healthy. This is a C
+  soft-float of the 60-bit one's-complement format, not a DtCyber
+  or COMPASS run, and not a revision of Vermaseren's quote.
