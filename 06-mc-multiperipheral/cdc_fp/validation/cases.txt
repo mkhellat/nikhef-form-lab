@@ -1,0 +1,76 @@
+# CDC-60 oracle cases, version 1.
+#
+# Ids are at most 7 characters so an FTN5 program can use the same
+# names. lit values are exact in a 48-bit integer coefficient.
+# +0 and -0 are signed zeros. muln A B N is N truncating multiplies
+# of A by B, not the Fortran ** operator.
+#
+# Seeded integers use the glibc LCG
+#   s = (1103515245 * s + 12345) mod 2^31
+# starting at s = 20261124. Each operand is (s mod 48) + 1.
+# Four pairs are written out as lit lines so the Fortran side sees
+# the same decimal integers. compare_cdc_oracle.py --check-cases
+# recomputes them.
+
+zplus   lit +0
+zminus  lit -0
+one     lit +1
+mone    lit -1
+two     lit +2
+three   lit +3
+four    lit +4
+five    lit +5
+six     lit +6
+half    lit +0.5
+m2      lit -2
+m3      lit -3
+m4      lit -4
+
+add11   add one one
+add22   add two two
+add1m1  add one mone
+adm2m3  add m2 m3
+sub53   sub five three
+sub11   sub one one
+mul23   mul two three
+mulm4h  mul m4 half
+mul05   mul zplus five
+div63   div six three
+div12   div one two
+div14   div one four
+div42   div four two
+div13   div one three
+
+e40     muln one half 40
+sum40   add one e40
+can40   sub sum40 one
+e50     muln one half 50
+sum50   add one e50
+can50   sub sum50 one
+e46     muln one half 46
+sum46   add one e46
+can46   sub sum46 one
+
+p7      lit +1000003
+sq      mul p7 p7
+
+r1a     lit +14
+r1b     lit +3
+r1add   add r1a r1b
+r1mul   mul r1a r1b
+r1div   div r1a r1b
+r2a     lit +4
+r2b     lit +1
+r2add   add r2a r2b
+r2mul   mul r2a r2b
+r2div   div r2a r2b
+r3a     lit +42
+r3b     lit +15
+r3add   add r3a r3b
+r3mul   mul r3a r3b
+r3div   div r3a r3b
+r4a     lit +32
+r4b     lit +45
+r4add   add r4a r4b
+r4mul   mul r4a r4b
+r4div   div r4a r4b

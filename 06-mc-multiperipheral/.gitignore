@@ -10,3 +10,5 @@ numeric/check_stable_c
 numeric/digit_loss_mij
 numeric/digit_loss_naive
 numeric/mc_digit_loss
+cdc_fp/validation/oracle_cdc_fp
+cdc_fp/validation/.oracle_out.txt
