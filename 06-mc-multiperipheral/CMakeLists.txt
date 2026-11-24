@@ -82,3 +82,8 @@ add_executable(digit_loss_eemm_gamgam ${DRIVER_DIR}/digit_loss_eemm_gamgam.c)
 target_include_directories(digit_loss_eemm_gamgam PRIVATE ${NUMERIC_DIR})
 target_link_libraries(digit_loss_eemm_gamgam PRIVATE kinc2 ${MUMU_MATH_LIBS})
 add_test(NAME digit_loss_eemm_gamgam COMMAND $<TARGET_FILE:digit_loss_eemm_gamgam>)
+
+add_executable(mc_digit_loss_eemm_gamgam ${DRIVER_DIR}/mc_digit_loss_eemm_gamgam.c)
+target_include_directories(mc_digit_loss_eemm_gamgam PRIVATE ${NUMERIC_DIR})
+target_link_libraries(mc_digit_loss_eemm_gamgam PRIVATE kinc2 ${MUMU_MATH_LIBS})
+add_test(NAME mc_digit_loss_eemm_gamgam COMMAND $<TARGET_FILE:mc_digit_loss_eemm_gamgam>)
