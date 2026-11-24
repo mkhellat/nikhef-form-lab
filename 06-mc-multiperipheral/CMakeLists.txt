@@ -24,6 +24,8 @@ set(MUMU_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(NUMERIC_DIR ${MUMU_ROOT}/numeric)
 set(KINC2_DIR ${MUMU_ROOT}/kinc2)
 set(DRIVER_DIR ${MUMU_ROOT}/kinc2-driver)
+set(CDC_DIR ${MUMU_ROOT}/cdc_fp)
+set(ME_DIR ${MUMU_ROOT}/me)
 
 # libm is separate on Unix; folded into the CRT on MSVC.
 set(MUMU_MATH_LIBS "")
@@ -87,3 +89,16 @@ add_executable(mc_digit_loss_eemm_gamgam ${DRIVER_DIR}/mc_digit_loss_eemm_gamgam
 target_include_directories(mc_digit_loss_eemm_gamgam PRIVATE ${NUMERIC_DIR})
 target_link_libraries(mc_digit_loss_eemm_gamgam PRIVATE kinc2 ${MUMU_MATH_LIBS})
 add_test(NAME mc_digit_loss_eemm_gamgam COMMAND $<TARGET_FILE:mc_digit_loss_eemm_gamgam>)
+
+# CDC-60 naive vs IEEE reference. Does not skip when long double is
+# not wider than double: the soft-float word is 48 bits on every host.
+add_executable(digit_loss_eemm_cdc
+  ${DRIVER_DIR}/digit_loss_eemm_cdc.c
+  ${CDC_DIR}/cdc_fp.c
+  ${ME_DIR}/eval_naive_cdc.c
+  ${ME_DIR}/dressed_naive_cdc.c
+)
+target_include_directories(digit_loss_eemm_cdc PRIVATE
+  ${NUMERIC_DIR} ${CDC_DIR} ${ME_DIR})
+target_link_libraries(digit_loss_eemm_cdc PRIVATE kinc2 ${MUMU_MATH_LIBS})
+add_test(NAME digit_loss_eemm_cdc COMMAND $<TARGET_FILE:digit_loss_eemm_cdc>)
