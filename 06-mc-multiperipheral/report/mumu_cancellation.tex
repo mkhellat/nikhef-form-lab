@@ -60,8 +60,12 @@ $\sum M_{ij}$ appears on real $2\to4$ \texttt{gamgam} samples, both as a
 digit table and as an MC \texttt{frac\_bad} rate. A host VEGAS driver at
 $15\,\mathrm{GeV}$ integrates the stable $\sum M_{ij}$ formula, and a
 CDC-60 soft-float of the naive Hessian loses digits on the same soft
-samples. That soft-float is not a DtCyber or COMPASS run, and it is
-not a revision of the quoted statement.
+samples. An FTN5 replay of a fixed arithmetic case vector on DtCyber
+matches that soft-float's 48-bit coefficients; the stored
+characteristic is the 6600 one's-complement form (normalized $+1$ is
+1720 octal, not the host excess-1024 word). The Hessian study itself
+stays on the host. That is not a COMPASS run, not a NOS execution of
+the integral, and not a revision of the quoted statement.
 \end{abstract}
 
 \tableofcontents
@@ -866,6 +870,20 @@ PASS requires soft CDC \texttt{frac\_bad}$>0.35$ and mij
 $|t|$ is where the CDC coefficient still tracks IEEE, which is why
 the mild-kinematics smoke in \texttt{me/} agrees at $\sim 10^{-14}$.
 
+The same four operations were replayed as FTN5 on DtCyber (NOS 2.8.7,
+CYBER 865 image) for a fixed case vector: signed zeros, small
+integers, truncating quotients including $1/3$, $1000003^2$, and the
+$(1+\varepsilon)-1$ chops.
+\texttt{make -C cdc\_fp check} compares the host dump with that
+listing. All 58 results share the host 48-bit coefficient. $+0$ and
+$-0$ match as bits. Every finite nonzero characteristic is the 6600
+one's-complement packing of the integer-coefficient exponent, so
+normalized $+1$ is octal $17204000000000000000$ rather than the host
+word $20014000000000000000$. The host library is not retuned. The
+Hessian \texttt{frac\_bad} numbers above are still that host
+evaluation. They are not a NOS run of the integral, and they are not
+a cycle-accurate 6600 adder.
+
 \subsection{What this section does and does not claim}
 \label{sec:vegas-cdc-claims}
 
@@ -874,10 +892,14 @@ the mild-kinematics smoke in \texttt{me/} agrees at $\sim 10^{-14}$.
     $\sum M_{ij}$ formula at $15\,\mathrm{GeV}$ is finite, and on real
     \texttt{gamgam} samples the CDC-60 naive Hessian has high
     \texttt{frac\_bad} at soft $|t|$ while $\sum M_{ij}/B^2$ does not.
-  \item \textbf{Not claimed here:} (i)~that this soft-float matches a
-    6600 adder, DtCyber, or COMPASS microcode (validation against
-    those is deferred); (ii)~a NOS-packaged generator; (iii)~any
-    revision of Vermaseren's quoted statement, which stands as written.
+  \item \textbf{Also claimed here:} on that fixed case vector, FTN5
+    on DtCyber agrees with \texttt{cdc\_fp} on the 48-bit coefficient
+    and on signed zero. The stored characteristic is the 6600
+    one's-complement form, not the host excess-1024 word.
+  \item \textbf{Not claimed here:} (i)~a cycle-accurate 6600 adder or
+    COMPASS microcode; (ii)~a NOS-packaged generator, or that the
+    Hessian integral itself ran under NOS; (iii)~any revision of
+    Vermaseren's quoted statement, which stands as written.
 \end{enumerate}
 
 \section{Conclusion}
@@ -902,8 +924,10 @@ dressed L$\otimes$L(naive) versus $\sum M_{ij}$ is seen on
 (\texttt{make -C kinc2-driver digit-loss-eemm}) and as an MC
 \texttt{frac\_bad} rate (Section~\ref{sec:mc-eemm}).
 Section~\ref{sec:vegas-cdc} adds a host VEGAS integral of the stable
-formula and a CDC-60 soft-float of the naive Hessian. That is not a
-DtCyber or COMPASS execution of the same integral.
+formula and a CDC-60 soft-float of the naive Hessian. An FTN5 case
+vector on DtCyber matches that soft-float's coefficients and records
+the one's-complement characteristic. The integral itself was not run
+under NOS or COMPASS.
 
 The algebraic and tooling layers around that finding are closed:
 naive$\equiv$(3.5); $\sum_{ij}M_{ij}\equiv L\otimes L$; C evaluators in
