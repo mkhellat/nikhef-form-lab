@@ -8,7 +8,8 @@ L⊗L Hessian as `kinc2-driver/digit_loss_eemm_gamgam.c`: lepton tensor
 and Hessian combination stay in host double; the polynomial does not.
 
 `dressed_naive_ld` is the long-double reference through that same
-contraction.
+contraction. `dressed_naive_dbl` is the IEEE-double polynomial
+through it, for the eemm driver.
 
 ```bash
 make -C 06-mc-multiperipheral/me check

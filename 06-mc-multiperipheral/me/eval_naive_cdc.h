@@ -26,5 +26,8 @@ double dressed_naive_cdc(const V4 *q1, const V4 *q2, const V4 *p1,
 			 const V4 *p2, const V4 *p6, const V4 *p7, double m);
 double dressed_naive_ld(const V4 *q1, const V4 *q2, const V4 *p1,
 			const V4 *p2, const V4 *p6, const V4 *p7, double m);
+/* IEEE double poly through the same Hessian (not long double). */
+double dressed_naive_dbl(const V4 *q1, const V4 *q2, const V4 *p1,
+			 const V4 *p2, const V4 *p6, const V4 *p7, double m);
 
 #endif

@@ -7,7 +7,7 @@
 
 #include <string.h>
 
-enum { MODE_LD = 0, MODE_CDC = 1 };
+enum { MODE_LD = 0, MODE_CDC = 1, MODE_DBL = 2 };
 
 typedef struct {
 	const V4 *q1, *q2, *p1, *p2, *p6, *p7;
@@ -86,6 +86,8 @@ static double S_at(DressCtx *ctx, const V4 *e1, const V4 *e2)
 	fill_dots(e1, e2, ctx, &d, &dl);
 	if (ctx->mode == MODE_CDC)
 		return eval_naive_poly_cdc(&d);
+	if (ctx->mode == MODE_DBL)
+		return eval_naive_poly(&d);
 	return (double)eval_naive_poly_l(&dl);
 }
 
@@ -184,4 +186,10 @@ double dressed_naive_ld(const V4 *q1, const V4 *q2, const V4 *p1, const V4 *p2,
 			const V4 *p6, const V4 *p7, double m)
 {
 	return dressed_mode(q1, q2, p1, p2, p6, p7, m, MODE_LD);
+}
+
+double dressed_naive_dbl(const V4 *q1, const V4 *q2, const V4 *p1, const V4 *p2,
+			 const V4 *p6, const V4 *p7, double m)
+{
+	return dressed_mode(q1, q2, p1, p2, p6, p7, m, MODE_DBL);
 }
