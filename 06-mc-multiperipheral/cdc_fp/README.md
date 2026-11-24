@@ -20,4 +20,13 @@ the bit patterns match a 6600 adder cycle for cycle.
 make -C 06-mc-multiperipheral/cdc_fp check
 ```
 
-prints `PASS: cdc_fp`.
+prints `PASS: cdc_fp`, then `PASS: cdc_fp_oracle_cases`,
+`PASS: cdc_fp_oracle_known`, and `PASS: cdc_fp_oracle`. The same run
+also compares a fresh dump to `validation/cyber_results.txt` when that
+file exists. Without it the line is
+`PASS: cdc_fp_cyber (skipped, no cyber_results.txt)`.
+
+`make oracle` writes the case vector to stdout (`CDC_FP_ORACLE 1`,
+then `id op oct20 hex15 decimal`). The octal field is the low 60
+bits, including one's-complement negatives and signed zero. See
+`validation/README.md`.
