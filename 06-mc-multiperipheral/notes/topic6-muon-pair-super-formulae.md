@@ -151,3 +151,9 @@ Python/C (`scripts/mumu_stable_35_check.py`, `scripts/mumu_mij_check.py`).
 - Digit-loss of $\sum M_{ij}/B^2$ vs L⊗L(naive) on gamgam samples is
   gated by `make -C kinc2-driver digit-loss-eemm` (soft $|t|$ keeps
   `dig_mij` healthy while the dressed-naive path collapses).
+- The matching MC `frac_bad` *rate* (soft/mid/hard $t_{\max}$,
+  Section 7 style) is gated by
+  `make -C kinc2-driver mc-digit-loss-eemm`. Soft dressed `frac_bad`
+  is high and mij `frac_bad` is low. This closes the dressed
+  soft-$|t|$ MC-rate half; it is still not a full PETRA VEGAS +
+  CDC-60-bit generator.

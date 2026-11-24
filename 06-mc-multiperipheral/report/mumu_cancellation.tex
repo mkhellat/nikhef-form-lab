@@ -56,8 +56,9 @@ on the subprocess poly alone, catastrophic double/long-double loss tracks
 the Ward surface $e_1\to q_1$, not soft virtuality $t_1,t_2\to0$ by itself
 (physical-transverse MC stays healthy down to $\varepsilon=10^{-12}$).
 Soft-$|t|$ collapse of a dressed L$\otimes$L(naive) path versus
-$\sum M_{ij}$ appears on real $2\to4$ \texttt{gamgam} samples. We do not
-claim a full PETRA/LEP $e^+e^-$ Monte Carlo with CDC-era arithmetic.
+$\sum M_{ij}$ appears on real $2\to4$ \texttt{gamgam} samples, both as a
+digit table and as an MC \texttt{frac\_bad} rate. We do not claim a full
+PETRA/LEP $e^+e^-$ Monte Carlo with CDC-era arithmetic.
 \end{abstract}
 
 \tableofcontents
@@ -738,6 +739,62 @@ matching Section~\ref{sec:numerics} but now as a phase-space rate.
     estimate.
 \end{enumerate}
 
+\section{Dressed $2\to4$ Monte Carlo rate}
+\label{sec:mc-eemm}
+
+Section~\ref{sec:mc} gave \texttt{frac\_bad} for the isolated subprocess
+poly. The digit-loss gate \texttt{digit\_loss\_eemm\_gamgam} then showed
+mean digits of $\sum M_{ij}/B^2$ versus L$\otimes$L(naive) on real
+\texttt{gamgam} samples. This section reports the same comparison as a
+\emph{rate}, so the dressed soft-$|t|$ half of Vermaseren's warning is
+stated the same way as Section~\ref{sec:mc}.
+
+Driver: \texttt{kinc2-driver/mc\_digit\_loss\_eemm\_gamgam.c}. Same
+sampling and eval paths as the digit table (vendored \texttt{gamgam},
+$Q=p_6-p_7$, \texttt{eval\_mij\_sum\_over\_B2} versus the L$\otimes$L
+Hessian of \texttt{eval\_naive\_poly}). Bins
+$t_{\max}=\max(|t_1|,|t_2|)$ as soft ($<1\,\mathrm{GeV}^2$, the
+\texttt{peripp}$\leftrightarrow\sum M_{ij}$ cut), mid $[1,10)$, and
+hard $\ge 10$. A point is bad when double/long-double digits are $<6$.
+
+\begin{verbatim}
+make -C kinc2-driver mc-digit-loss-eemm
+\end{verbatim}
+
+\begin{center}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+bin / $t_{\max}$ & $n$ & $\mathrm{frac\_bad}$ mij &
+  $\mathrm{frac\_bad}$ dressed & mean digits (mij / dr) \\
+\midrule
+soft, $<1$ & $2134$ & $0.016$ & $0.55$ & $10.1$ / $5.7$ \\
+mid, $[1,10)$ & $331$ & $0.006$ & $0.11$ & $11.8$ / $11.1$ \\
+hard, $\ge 10$ & $535$ & $0.002$ & $0.030$ & $11.9$ / $15.6$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+$N=3000$ accepted \texttt{gamgam} trials at $E_{\mathrm{beam}}=15\,\mathrm{GeV}$.
+At the multiperipheral peak the dressed-naive path is bad on a majority
+of points while $\sum M_{ij}$ is not. Harder $|t|$ improves dressed
+digits; that is contrast, not the PASS predicate
+(\texttt{frac\_bad} dressed $>0.35$ and mij $<0.10$ on the soft bin).
+
+\subsection{What this section does and does not claim}
+\label{sec:mc-eemm-claims}
+
+\begin{enumerate}
+  \item \textbf{Claimed here:} on real $2\to4$ \texttt{gamgam} samples,
+    the dressed L$\otimes$L(naive) path has high \texttt{frac\_bad} at
+    soft $|t|$, while $\sum M_{ij}/B^2$ stays low. Together with the
+    existing digit table this closes the dressed soft-$|t|$ MC-rate
+    half of what we can reproduce.
+  \item \textbf{Not claimed here:} (i)~a full PETRA/LEP
+    $e^+e^-\to e^+e^-\mu^+\mu^-$ generator (\texttt{eemm.c} VEGAS);
+    (ii)~CDC 60-bit arithmetic; (iii)~any revision of Vermaseren's
+    quoted statement, which stands as written.
+\end{enumerate}
+
 \section{Conclusion}
 \label{sec:conclusion}
 
@@ -756,7 +813,9 @@ The limitation is where that loss appears for free polarizations:
 Monte Carlo fractions track the Ward surface $e_1\to q_1$, not soft
 $t_1,t_2\to0$ alone (Section~\ref{sec:mc}). Soft-$|t|$ digit-loss of
 dressed L$\otimes$L(naive) versus $\sum M_{ij}$ is seen on
-\texttt{gamgam} samples (\texttt{make -C kinc2-driver digit-loss-eemm}).
+\texttt{gamgam} samples as a digit table
+(\texttt{make -C kinc2-driver digit-loss-eemm}) and as an MC
+\texttt{frac\_bad} rate (Section~\ref{sec:mc-eemm}).
 Neither replaces a full $e^+e^-\to e^+e^-\mu^+\mu^-$ generator under
 CDC-era arithmetic.
 
