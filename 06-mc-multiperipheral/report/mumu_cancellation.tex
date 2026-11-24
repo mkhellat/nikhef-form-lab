@@ -57,8 +57,11 @@ the Ward surface $e_1\to q_1$, not soft virtuality $t_1,t_2\to0$ by itself
 (physical-transverse MC stays healthy down to $\varepsilon=10^{-12}$).
 Soft-$|t|$ collapse of a dressed L$\otimes$L(naive) path versus
 $\sum M_{ij}$ appears on real $2\to4$ \texttt{gamgam} samples, both as a
-digit table and as an MC \texttt{frac\_bad} rate. We do not claim a full
-PETRA/LEP $e^+e^-$ Monte Carlo with CDC-era arithmetic.
+digit table and as an MC \texttt{frac\_bad} rate. A host VEGAS driver at
+$15\,\mathrm{GeV}$ integrates the stable $\sum M_{ij}$ formula, and a
+CDC-60 soft-float of the naive Hessian loses digits on the same soft
+samples. That soft-float is not a DtCyber or COMPASS run, and it is
+not a revision of the quoted statement.
 \end{abstract}
 
 \tableofcontents
@@ -789,10 +792,92 @@ digits; that is contrast, not the PASS predicate
     soft $|t|$, while $\sum M_{ij}/B^2$ stays low. Together with the
     existing digit table this closes the dressed soft-$|t|$ MC-rate
     half of what we can reproduce.
-  \item \textbf{Not claimed here:} (i)~a full PETRA/LEP
-    $e^+e^-\to e^+e^-\mu^+\mu^-$ generator (\texttt{eemm.c} VEGAS);
-    (ii)~CDC 60-bit arithmetic; (iii)~any revision of Vermaseren's
-    quoted statement, which stands as written.
+  \item \textbf{Not claimed in this section:} the VEGAS integral and
+    the CDC-60 word. Those are Section~\ref{sec:vegas-cdc}. Still not
+    claimed anywhere in this report: a revision of Vermaseren's quoted
+    statement, which stands as written.
+\end{enumerate}
+
+\section{VEGAS driver and CDC-60 soft-float}
+\label{sec:vegas-cdc}
+
+Section~\ref{sec:mc-eemm} left two items unbuilt: a VEGAS integral of
+the $e^+e^-$ process, and arithmetic in a 60-bit word. Both now exist
+as host code. Neither is a CDC 6600 execution.
+
+The driver is \texttt{eemm/eemm\_vegas.c}. It calls the same VEGAS
+translation as the FORM course (\texttt{vegas/vegas.c}, Lepage 1978,
+plot hooks removed) on the 7-dimensional unit cube, with
+\texttt{gamgam} supplying the Jacobian. The beam energy is
+$15\,\mathrm{GeV}$. There is no minimum-$|t|$ cut, so the soft peak
+stays in the integral. The default matrix element is
+$\tfrac14\sum M_{ij}/(t_1 t_2 B)^2$ with $B=\texttt{civita.bb}$.
+The \texttt{ieee} and \texttt{cdc} switches put the same
+$1/(t_1 t_2)^2$ prefactor on the L$\otimes$L Hessian, in IEEE double
+or in the CDC-60 soft-float. The integrand is $dj\,|\mathcal M|^2/(2s)$
+with $s=4 E_{\mathrm{beam}}^2$, the flux convention of the $\pi^0$
+scan. It is a finite-$\sigma$ sanity check, not a published PETRA
+cross section.
+
+\begin{verbatim}
+make -C eemm check
+\end{verbatim}
+
+On that run the stable backend gives
+$\sigma=1.706\times 10^{-7}$ with standard deviation
+$3.9\times 10^{-9}$ ($n_{\mathrm{acc}}=1920$). The course integrator
+stops when the relative standard deviation falls under the 5\%
+request, which happens on the first iteration, so $\chi^2$ stays 0.
+One accepted point with $|t_1|\approx 0.13$ and $|t_2|\approx 0.15$
+returns $9.782\times 10^{9}$ from all three backends.
+
+The soft-float is \texttt{cdc\_fp}: a 60-bit one's-complement word
+(sign, 11-bit characteristic biased by 1024, 48-bit integer
+coefficient), normalized and truncating. Negatives are the complement
+of the whole word. The 98-term naive polynomial is evaluated with
+those operations. The gate
+
+\begin{verbatim}
+make -C kinc2-driver digit-loss-eemm-cdc
+\end{verbatim}
+
+bins \texttt{gamgam} samples as in Section~\ref{sec:mc-eemm}.
+\texttt{dig\_cdc} compares the CDC Hessian to the widest IEEE
+evaluation of the same contraction. There is no long-double skip:
+when \texttt{long double} is not wider than \texttt{double} the
+reference is IEEE double, and the 48-bit word is still narrower.
+$N=400$ trials at $15\,\mathrm{GeV}$.
+
+\begin{center}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+bin / $t_{\max}$ & $n$ & $\mathrm{frac\_bad}$ mij &
+  $\mathrm{frac\_bad}$ CDC & mean digits (mij / CDC) \\
+\midrule
+soft, $<1$ & $249$ & $0.008$ & $0.63$ & $10.3$ / $4.4$ \\
+mid, $[1,10)$ & $59$ & $0.000$ & $0.20$ & $11.9$ / $8.9$ \\
+hard, $\ge 10$ & $92$ & $0.011$ & $0.076$ & $11.7$ / $10.3$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+PASS requires soft CDC \texttt{frac\_bad}$>0.35$ and mij
+\texttt{frac\_bad}$<0.10$. The soft bin meets that split. Harder
+$|t|$ is where the CDC coefficient still tracks IEEE, which is why
+the mild-kinematics smoke in \texttt{me/} agrees at $\sim 10^{-14}$.
+
+\subsection{What this section does and does not claim}
+\label{sec:vegas-cdc-claims}
+
+\begin{enumerate}
+  \item \textbf{Claimed here:} a host VEGAS integral of the stable
+    $\sum M_{ij}$ formula at $15\,\mathrm{GeV}$ is finite, and on real
+    \texttt{gamgam} samples the CDC-60 naive Hessian has high
+    \texttt{frac\_bad} at soft $|t|$ while $\sum M_{ij}/B^2$ does not.
+  \item \textbf{Not claimed here:} (i)~that this soft-float matches a
+    6600 adder, DtCyber, or COMPASS microcode (validation against
+    those is deferred); (ii)~a NOS-packaged generator; (iii)~any
+    revision of Vermaseren's quoted statement, which stands as written.
 \end{enumerate}
 
 \section{Conclusion}
@@ -816,13 +901,15 @@ dressed L$\otimes$L(naive) versus $\sum M_{ij}$ is seen on
 \texttt{gamgam} samples as a digit table
 (\texttt{make -C kinc2-driver digit-loss-eemm}) and as an MC
 \texttt{frac\_bad} rate (Section~\ref{sec:mc-eemm}).
-Neither replaces a full $e^+e^-\to e^+e^-\mu^+\mu^-$ generator under
-CDC-era arithmetic.
+Section~\ref{sec:vegas-cdc} adds a host VEGAS integral of the stable
+formula and a CDC-60 soft-float of the naive Hessian. That is not a
+DtCyber or COMPASS execution of the same integral.
 
 The algebraic and tooling layers around that finding are closed:
 naive$\equiv$(3.5); $\sum_{ij}M_{ij}\equiv L\otimes L$; C evaluators in
 the digit-loss / MC drivers; FORM App-C and $M_{ij}$ transcription;
-\texttt{gamgam}/\texttt{peripp} kinematics gate.
+\texttt{gamgam}/\texttt{peripp} kinematics gate, the VEGAS \texttt{eemm}
+driver, and the CDC-60 soft-float gate.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
