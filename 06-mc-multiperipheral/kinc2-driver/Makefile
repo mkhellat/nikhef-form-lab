@@ -19,7 +19,8 @@ KINC2_COMMON = \
 
 .PHONY: all check check-eemm digit-loss-eemm mc-digit-loss-eemm \
 	digit-loss-eemm-cdc clean \
-	scan_pi0_scaling check_gram_minors mc_xsec_s_scan
+	scan_pi0_scaling check_gram_minors mc_xsec_s_scan \
+	xsec_pi0_vegas check-xsec-pi0
 
 all: check
 
@@ -70,7 +71,18 @@ mc_xsec_s_scan: mc_xsec_s_scan.c $(KINC2_COMMON) $(KINC2)/pi0.c
 	$(CC) $(CFLAGS) -I$(KINC2) -o $@ \
 		mc_xsec_s_scan.c $(KINC2_COMMON) $(KINC2)/pi0.c -lm
 
+# VEGAS scan of the pi0 integrand; links the thin vegas/ copy.
+xsec_pi0_vegas: xsec_pi0_vegas.c $(KINC2_COMMON) $(KINC2)/pi0.c ../vegas/vegas.c
+	$(CC) $(CFLAGS) -O2 -I$(KINC2) -I../vegas -o $@ \
+		xsec_pi0_vegas.c ../vegas/vegas.c $(KINC2_COMMON) \
+		$(KINC2)/pi0.c -lm
+
+# Short gate run (< 60 s); the exit status of --check is the verdict.
+check-xsec-pi0: xsec_pi0_vegas
+	./xsec_pi0_vegas --check --calls 300000 --iters 10
+
 clean:
 	rm -f check_eemm_gamgam digit_loss_eemm_gamgam \
 		mc_digit_loss_eemm_gamgam digit_loss_eemm_cdc \
-		scan_pi0_scaling check_gram_minors mc_xsec_s_scan *.o
+		scan_pi0_scaling check_gram_minors mc_xsec_s_scan \
+		xsec_pi0_vegas *.o
