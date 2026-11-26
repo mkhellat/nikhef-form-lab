@@ -7,12 +7,13 @@
  * is no minimum-|t| cut and no scattering-angle veto, so the soft
  * multiperipheral peak stays in the integral.
  *
- * Backends (argv[1], default stable):
+ * Backends (--backend or first positional, default stable):
  *   stable  1/4 * Σ M_ij / (t1 t2 B)^2   with B = civita.bb
  *   peripp  kinc2/peripp.c, the archive's own matrix element
  *   ieee    same prefactor on L⊗L(naive) in IEEE double
  *   cdc     same prefactor on L⊗L(naive) in CDC-60 soft-float
- * argv[2] (optional) is Ebeam in GeV.
+ * Ebeam in GeV is --ebeam (or --sqrts = 2 Ebeam), or the second
+ * positional argument. --seed N seeds the RNG; see --help.
  *
  * Why the integrand is just (ħc)^2 * dj * |M|^2:
  *
@@ -54,13 +55,16 @@
  * repeat the archive run of ee.tex:63 (299822.63 +- 284 pb).
  *
  *   make -C 06-mc-multiperipheral/eemm check
- *   ./eemm_vegas [stable|peripp|ieee|cdc] [Ebeam]
+ *   ./eemm_vegas [options] [stable|peripp|ieee|cdc] [Ebeam]
+ *   ./eemm_vegas --backend peripp --ebeam 15 --seed 7 --calls 50000
  * Pass (default): PASS: eemm_vegas
  */
 #include "axolib.h"
 #include "eval_mij.h"
 #include "eval_naive_cdc.h"
 
+#include <errno.h>
+#include <getopt.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -251,48 +255,155 @@ static const char *be_name(int be)
 	return "stable";
 }
 
-static void usage(const char *prog)
+static void usage(FILE *out, const char *prog)
 {
-	fprintf(stderr, "usage: %s [stable|peripp|ieee|cdc] [Ebeam/GeV]\n",
-		prog);
+	fprintf(out,
+		"usage: %s [options] [BACKEND [EBEAM]]\n"
+		"  --backend B   stable (default), peripp, ieee or cdc\n"
+		"  --ebeam GEV   beam energy, default %g (must exceed 2 m_mu)\n"
+		"  --sqrts GEV   same as --ebeam GEV/2\n"
+		"  --seed N      seed the RNG with N in 1..2147483562;\n"
+		"                without it the fixed default stream is used\n"
+		"  --calls N     VEGAS calls per iteration, default %d\n"
+		"                (ieee and cdc: 400)\n"
+		"  --iters N     VEGAS iterations, default %d (ieee, cdc: 2)\n"
+		"  --acc X       VEGAS accuracy goal sd/sigma, default 1e-4\n"
+		"  --help        show this text\n"
+		"BACKEND and EBEAM may also be given positionally, as in\n"
+		"  %s peripp 150\n"
+		"and then override --backend and --ebeam.\n",
+		prog, REF_EBEAM, NCALLS_REF, ITMAX_REF, prog);
+}
+
+/* Beginner note: strtod/strtol leave endptr at the first unread
+ * character, so "12abc" or "" is caught by *end != '\0'. */
+static int parse_backend(const char *s)
+{
+	if (strcmp(s, "stable") == 0)
+		return BE_STABLE;
+	if (strcmp(s, "peripp") == 0)
+		return BE_PERIPP;
+	if (strcmp(s, "ieee") == 0)
+		return BE_IEEE;
+	if (strcmp(s, "cdc") == 0)
+		return BE_CDC;
+	return -1;
+}
+
+static int parse_double(const char *s, double *v)
+{
+	char *end;
+
+	errno = 0;
+	*v = strtod(s, &end);
+	return *s != '\0' && *end == '\0' && errno == 0 && isfinite(*v);
+}
+
+static int parse_long(const char *s, long *v)
+{
+	char *end;
+
+	errno = 0;
+	*v = strtol(s, &end, 10);
+	return *s != '\0' && *end == '\0' && errno == 0;
+}
+
+static int bad_value(const char *prog, const char *opt, const char *val)
+{
+	fprintf(stderr, "%s: invalid value '%s' for %s\n", prog, val, opt);
+	return 2;
 }
 
 int main(int argc, char **argv)
 {
-	long ncalls = NCALLS_REF;
+	static const struct option longopts[] = {
+		{ "backend", required_argument, NULL, 'b' },
+		{ "ebeam", required_argument, NULL, 'e' },
+		{ "sqrts", required_argument, NULL, 'w' },
+		{ "seed", required_argument, NULL, 's' },
+		{ "calls", required_argument, NULL, 'n' },
+		{ "iters", required_argument, NULL, 'i' },
+		{ "acc", required_argument, NULL, 'a' },
+		{ "help", no_argument, NULL, 'h' },
+		{ NULL, 0, NULL, 0 }
+	};
+	long ncalls = NCALLS_REF, seed = 0, v;
 	int itmax = ITMAX_REF;
-	double st, ie, cd, tol;
+	int calls_set = 0, iters_set = 0, c;
+	double st, ie, cd, tol, acc = 1e-4, x;
 
-	if (argc > 3) {
-		usage(argv[0]);
+	while ((c = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
+		switch (c) {
+		case 'b':
+			g_be = parse_backend(optarg);
+			if (g_be < 0)
+				return bad_value(argv[0], "--backend", optarg);
+			break;
+		case 'e':
+		case 'w':
+			if (!parse_double(optarg, &x))
+				return bad_value(argv[0], c == 'e' ? "--ebeam"
+								   : "--sqrts",
+						 optarg);
+			ebeam = (c == 'w') ? 0.5 * x : x;
+			break;
+		case 's':
+			if (!parse_long(optarg, &seed) || seed < 1 ||
+			    seed > 2147483562L)
+				return bad_value(argv[0], "--seed", optarg);
+			break;
+		case 'n':
+			if (!parse_long(optarg, &v) || v < 1)
+				return bad_value(argv[0], "--calls", optarg);
+			ncalls = v;
+			calls_set = 1;
+			break;
+		case 'i':
+			if (!parse_long(optarg, &v) || v < 1 || v > 1000000)
+				return bad_value(argv[0], "--iters", optarg);
+			itmax = (int)v;
+			iters_set = 1;
+			break;
+		case 'a':
+			if (!parse_double(optarg, &acc) || !(acc > 0.0))
+				return bad_value(argv[0], "--acc", optarg);
+			break;
+		case 'h':
+			usage(stdout, argv[0]);
+			return 0;
+		default: /* getopt_long already printed the complaint */
+			usage(stderr, argv[0]);
+			return 2;
+		}
+	}
+	/* Old positional form: [backend] [Ebeam]. */
+	if (argc - optind > 2) {
+		usage(stderr, argv[0]);
 		return 2;
 	}
-	if (argc >= 2) {
-		if (strcmp(argv[1], "stable") == 0)
-			g_be = BE_STABLE;
-		else if (strcmp(argv[1], "peripp") == 0)
-			g_be = BE_PERIPP;
-		else if (strcmp(argv[1], "ieee") == 0)
-			g_be = BE_IEEE;
-		else if (strcmp(argv[1], "cdc") == 0)
-			g_be = BE_CDC;
-		else {
-			usage(argv[0]);
+	if (argc - optind >= 1) {
+		g_be = parse_backend(argv[optind]);
+		if (g_be < 0) {
+			usage(stderr, argv[0]);
 			return 2;
 		}
 	}
-	if (argc == 3) {
-		ebeam = strtod(argv[2], NULL);
-		if (!(ebeam > 2.0 * mmu)) {
-			usage(argv[0]);
-			return 2;
-		}
+	if (argc - optind == 2 && !parse_double(argv[optind + 1], &ebeam)) {
+		usage(stderr, argv[0]);
+		return 2;
+	}
+	if (!(ebeam > 2.0 * mmu)) {
+		fprintf(stderr, "%s: Ebeam must exceed 2 m_mu = %g GeV\n",
+			argv[0], 2.0 * mmu);
+		return 2;
 	}
 
 	/* CDC and IEEE Hessians are much heavier than Σ M_ij. */
 	if (g_be == BE_IEEE || g_be == BE_CDC) {
-		ncalls = 400;
-		itmax = 2;
+		if (!calls_set)
+			ncalls = 400;
+		if (!iters_set)
+			itmax = 2;
 	}
 
 	eemminput.me = me;
@@ -302,7 +413,17 @@ int main(int argc, char **argv)
 
 	printf("# eemm_vegas: Ebeam=%.3f GeV backend=%s no min-|t| cut\n",
 	       ebeam, be_name(g_be));
-	vegas(feemm, 1e-4, 7, ncalls, itmax, 0);
+	/*
+	 * ranf(seed) seeds the kinc2 generator that vegas() draws from
+	 * (ranf.c: it calls rcargo(seed) on first use when seed != 0).
+	 * Without --seed we do not touch it, so ranf falls back to its
+	 * own fixed seed 314159265 and results are reproducible anyway.
+	 */
+	if (seed) {
+		(void)ranf((LONG)seed);
+		printf("# seed=%ld\n", seed);
+	}
+	vegas(feemm, acc, 7, ncalls, itmax, 0);
 	printf("# sigma=%.8g nb  sd=%.3g nb  chi2=%.3g  n_acc=%ld\n", avgi, sd,
 	       chi2a, n_acc);
 
@@ -314,8 +435,10 @@ int main(int argc, char **argv)
 		printf("PASS: eemm_vegas_%s\n", be_name(g_be));
 		return 0;
 	}
-	if (ebeam != REF_EBEAM) {
-		printf("# no reference gate at this Ebeam\n");
+	if (ebeam != REF_EBEAM || ncalls != NCALLS_REF || itmax != ITMAX_REF ||
+	    acc != 1e-4) {
+		printf("# no reference gate (Ebeam, calls, iters or acc differ "
+		       "from the reference run)\n");
 		return 0;
 	}
 
