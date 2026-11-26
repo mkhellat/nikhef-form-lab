@@ -285,6 +285,10 @@ boundary-root factorization.
   only confirmed *why* it's harder than the $\pi^0$ case, not worked
   through *how* the method handles the two-diagram gauge-invariance
   problem concretely.
+  **(Resolved 2026-11: worked through in
+  [Topic 6](topic6-muon-pair-super-formulae.md), formulae (III.3) to
+  (III.11), with the numerical cancellation checked in
+  `report/mumu_cancellation.tex`.)**
 - The paper's remark that scalar-coupling's extra terms "do not
   contribute to the major numerical disasters" (p.352) is stated but not
   derived here — we have not checked why those particular extra terms
