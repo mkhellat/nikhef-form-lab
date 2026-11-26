@@ -3,23 +3,58 @@
  *
  * Rebuilds the thin eemm.c callback the kinc2 README describes:
  * vegas() on the 7-cube, gamgam() for the Jacobian, then a matrix
- * element. Beam energy is 15 GeV. There is no minimum-|t| cut and
- * no scattering-angle veto, so the soft multiperipheral peak stays
- * in the integral.
+ * element. Default beam energy is 15 GeV (sqrt(s) = 30 GeV). There
+ * is no minimum-|t| cut and no scattering-angle veto, so the soft
+ * multiperipheral peak stays in the integral.
  *
  * Backends (argv[1], default stable):
  *   stable  1/4 * Σ M_ij / (t1 t2 B)^2   with B = civita.bb
+ *   peripp  kinc2/peripp.c, the archive's own matrix element
  *   ieee    same prefactor on L⊗L(naive) in IEEE double
  *   cdc     same prefactor on L⊗L(naive) in CDC-60 soft-float
+ * argv[2] (optional) is Ebeam in GeV.
  *
- * The returned integrand is dj * |M|^2 / (2s), with s = 4 Ebeam^2.
- * The 1/(2s) factor is the flux convention used by the pi0 scan
- * (eee.c), not a new two-photon luminosity. dj already carries
- * gamgam's mconstant. This is a finite-sigma sanity check, not a
- * published PETRA cross section.
+ * Why the integrand is just (ħc)^2 * dj * |M|^2:
+ *
+ *   sigma  = 1/(2s) * (1/4 Σ_spins |M|^2) * dPhi_4
+ *   dPhi_4 = (2π)^-8 * Π d^3p/(2E) * δ^4(p1 + p2 - p3 - p5 - p6 - p7)
+ *
+ * gamgam.c:59 divides its Jacobian by mconstant * s, and
+ * mconstant = 2.1868465e10 (gamgam.c:29) equals 2 (2π)^8 / (π e^8)
+ * with e^2 = 4π/137.036 (to 2e-8). Piece by piece:
+ *   2 s     is the flux 1/(2s);
+ *   (2π)^8  are the phase-space (2π) factors;
+ *   e^8     are the four QED vertices, so the matrix element must
+ *           be the e = 1 one (peripp and Σ M_ij both are);
+ *   π       is put back because gamgam writes the muon two-body
+ *           phase space as pcm6/m4, without the π of
+ *           R_2 = π p* / m4 (gamgam.c:59).
+ * Numerical check: with |M|^2 = 1 and all masses -> 0,
+ * π * dj * mconstant * s integrates to R_4 = π^3 s^2 / 96, the
+ * massless Π d^3p/(2E) δ^4 volume (the measure of twophoton.pdf
+ * eq. A1, PDF p.12). The 1/4 spin average sits inside the matrix
+ * element (peripp.c:105). So dj * |M|^2 is already sigma in GeV^-2.
+ *
+ * What is left is units: (ħc)^2 = 0.389379e6 nb GeV^2. The archive
+ * driver does the same in pb with ipow(19732.0, 2) (eemm.c:45,
+ * twopho.c:17): ħc = 19732 in units of 1e-5 GeV fm, so the square
+ * is 3.8935e8 pb GeV^2 (7e-5 below PDG, harmless here).
+ *
+ * An earlier version also divided by 2s, copied from eee.c:27-28.
+ * eee.c drives orient(), a bare 2->3 phase space with no flux, so
+ * it must supply 1/(2s) itself. gamgam() already has it; dividing
+ * again counted the flux twice.
+ *
+ * Reference: twophoton.pdf, PDF p.10 (section IV, Results):
+ * sigma(e+e- -> e+e- mu+mu-) at sqrt(s) = 30 GeV is
+ * 119.555 +- 0.019 nb. At Ebeam = 15 GeV the stable and peripp
+ * backends must agree with it within max(3 sd, 1%). We land about
+ * 0.1% high, several quoted sd; see README.md. Cross-check:
+ * "-DNCALLS_REF=33000 -DITMAX_REF=8" and "./eemm_vegas peripp 150"
+ * repeat the archive run of ee.tex:63 (299822.63 +- 284 pb).
  *
  *   make -C 06-mc-multiperipheral/eemm check
- *   ./eemm_vegas [stable|ieee|cdc]
+ *   ./eemm_vegas [stable|peripp|ieee|cdc] [Ebeam]
  * Pass (default): PASS: eemm_vegas
  */
 #include "axolib.h"
@@ -29,15 +64,35 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 EEMMINPUT eemminput;
 
-enum { BE_STABLE = 0, BE_IEEE = 1, BE_CDC = 2 };
+enum { BE_STABLE = 0, BE_IEEE = 1, BE_CDC = 2, BE_PERIPP = 3 };
+
+/* (ħc)^2 in nb GeV^2: turns gamgam's GeV^-2 into nb. */
+#define HBARC2_NB 0.389379e6
+
+/* twophoton.pdf PDF p.10: sqrt(s) = 30 GeV, multiperipheral only. */
+#define REF_EBEAM 15.0
+#define REF_SIGMA_NB 119.555
+#define REF_SD_NB 0.019
+
+/*
+ * VEGAS budget for stable/peripp: about 2 s and sd ~ 0.02% at 15 GeV.
+ * Override with -DNCALLS_REF=... -DITMAX_REF=...
+ */
+#ifndef NCALLS_REF
+#define NCALLS_REF 400000
+#endif
+#ifndef ITMAX_REF
+#define ITMAX_REF 10
+#endif
 
 static const double me = 0.000511;
 static const double mmu = 0.105658;
-static const double ebeam = 15.0;
+static double ebeam = REF_EBEAM;
 
 static int g_be = BE_STABLE;
 static long n_acc = 0;
@@ -120,12 +175,14 @@ static double me_of(int be, const V4 *q1, const V4 *q2, const V4 *Q,
 		return naive_me(dressed_naive_dbl(q1, q2, p1, p2, p6, p7, mmu));
 	if (be == BE_CDC)
 		return naive_me(dressed_naive_cdc(q1, q2, p1, p2, p6, p7, mmu));
+	if (be == BE_PERIPP)
+		return peripp(0, 0);
 	return stable_me(q1, q2, Q, p1, p2);
 }
 
 static double feemm(double *x)
 {
-	double dj, me2, s;
+	double dj, me2;
 	V4 p1, p2, p3, p5, p6, p7, q1, q2, Q;
 
 	dj = gamgam(ebeam, me, me, me, me, mmu, mmu, 0.0, 2.0 * ebeam, x, 0, 1);
@@ -139,8 +196,8 @@ static double feemm(double *x)
 	if (!isfinite(me2))
 		return 0.0;
 	n_acc++;
-	s = 4.0 * ebeam * ebeam;
-	return dj * me2 / (2.0 * s);
+	/* dj has flux, couplings and dPhi_4 (see top): only units left. */
+	return HBARC2_NB * dj * me2;
 }
 
 static int moderate_point(double *st, double *ie, double *cd)
@@ -189,33 +246,51 @@ static const char *be_name(int be)
 		return "ieee";
 	if (be == BE_CDC)
 		return "cdc";
+	if (be == BE_PERIPP)
+		return "peripp";
 	return "stable";
+}
+
+static void usage(const char *prog)
+{
+	fprintf(stderr, "usage: %s [stable|peripp|ieee|cdc] [Ebeam/GeV]\n",
+		prog);
 }
 
 int main(int argc, char **argv)
 {
-	long ncalls = 2000;
-	int itmax = 4;
-	double st, ie, cd;
+	long ncalls = NCALLS_REF;
+	int itmax = ITMAX_REF;
+	double st, ie, cd, tol;
 
-	if (argc == 2) {
+	if (argc > 3) {
+		usage(argv[0]);
+		return 2;
+	}
+	if (argc >= 2) {
 		if (strcmp(argv[1], "stable") == 0)
 			g_be = BE_STABLE;
+		else if (strcmp(argv[1], "peripp") == 0)
+			g_be = BE_PERIPP;
 		else if (strcmp(argv[1], "ieee") == 0)
 			g_be = BE_IEEE;
 		else if (strcmp(argv[1], "cdc") == 0)
 			g_be = BE_CDC;
 		else {
-			fprintf(stderr, "usage: %s [stable|ieee|cdc]\n", argv[0]);
+			usage(argv[0]);
 			return 2;
 		}
-	} else if (argc != 1) {
-		fprintf(stderr, "usage: %s [stable|ieee|cdc]\n", argv[0]);
-		return 2;
+	}
+	if (argc == 3) {
+		ebeam = strtod(argv[2], NULL);
+		if (!(ebeam > 2.0 * mmu)) {
+			usage(argv[0]);
+			return 2;
+		}
 	}
 
 	/* CDC and IEEE Hessians are much heavier than Σ M_ij. */
-	if (g_be != BE_STABLE) {
+	if (g_be == BE_IEEE || g_be == BE_CDC) {
 		ncalls = 400;
 		itmax = 2;
 	}
@@ -225,19 +300,42 @@ int main(int argc, char **argv)
 	eemminput.ebeam = ebeam;
 	eemminput.sq = 2.0 * ebeam;
 
-	printf("# eemm_vegas: Ebeam=%.3f GeV backend=%s flux=1/(2s) "
-	       "no min-|t| cut\n",
+	printf("# eemm_vegas: Ebeam=%.3f GeV backend=%s no min-|t| cut\n",
 	       ebeam, be_name(g_be));
-	vegas(feemm, 0.05, 7, ncalls, itmax, 0);
-	printf("# sigma=%.8g  sd=%.3g  chi2=%.3g  n_acc=%ld\n", avgi, sd, chi2a,
-	       n_acc);
+	vegas(feemm, 1e-4, 7, ncalls, itmax, 0);
+	printf("# sigma=%.8g nb  sd=%.3g nb  chi2=%.3g  n_acc=%ld\n", avgi, sd,
+	       chi2a, n_acc);
 
 	if (!isfinite(avgi) || !(avgi > 0.0) || !isfinite(sd) || n_acc < 50) {
 		fprintf(stderr, "FAIL: sigma not finite and positive\n");
 		return 1;
 	}
-	if (g_be != BE_STABLE) {
+	if (g_be == BE_IEEE || g_be == BE_CDC) {
 		printf("PASS: eemm_vegas_%s\n", be_name(g_be));
+		return 0;
+	}
+	if (ebeam != REF_EBEAM) {
+		printf("# no reference gate at this Ebeam\n");
+		return 0;
+	}
+
+	/*
+	 * Reference gate. The paper quotes 0.016% from about 5e6
+	 * points. VEGAS sd on this peaked integrand may be optimistic, and
+	 * we sit 0.1% high (see top), so allow the larger of 3 sd and 1%.
+	 */
+	tol = fmax(3.0 * sd, 0.01 * REF_SIGMA_NB);
+	printf("# ref=%.3f +- %.3f nb (twophoton.pdf p.10)  diff=%+.4g nb "
+	       "(%+.3f%%)  tol=%.3g nb\n",
+	       REF_SIGMA_NB, REF_SD_NB, avgi - REF_SIGMA_NB,
+	       100.0 * (avgi - REF_SIGMA_NB) / REF_SIGMA_NB, tol);
+	if (fabs(avgi - REF_SIGMA_NB) > tol) {
+		fprintf(stderr, "FAIL: sigma disagrees with %.3f nb\n",
+			REF_SIGMA_NB);
+		return 1;
+	}
+	if (g_be == BE_PERIPP) {
+		printf("PASS: eemm_vegas_peripp\n");
 		return 0;
 	}
 	if (moderate_point(&st, &ie, &cd))
