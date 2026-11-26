@@ -13,6 +13,8 @@ on:
       - "06-mc-multiperipheral/kinc2-driver/**"
       - "06-mc-multiperipheral/cdc_fp/**"
       - "06-mc-multiperipheral/me/**"
+      - "06-mc-multiperipheral/eemm/**"
+      - "06-mc-multiperipheral/vegas/**"
       - ".github/workflows/cmake-multiplatform.yml"
   pull_request:
     branches: [main]
@@ -23,6 +25,8 @@ on:
       - "06-mc-multiperipheral/kinc2-driver/**"
       - "06-mc-multiperipheral/cdc_fp/**"
       - "06-mc-multiperipheral/me/**"
+      - "06-mc-multiperipheral/eemm/**"
+      - "06-mc-multiperipheral/vegas/**"
       - ".github/workflows/cmake-multiplatform.yml"
   workflow_dispatch:
 
