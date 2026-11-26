@@ -40,7 +40,12 @@ enough ground is covered.
   from a separate 1982 paper (`twophoton.pdf`); walks formula (III.3)
   through (III.11). Cancellation report + scripts now machine-check
   naive≡(3.5) and full $M_{ij}\equiv W_i\otimes W_j$ against the naive
-  poly; still no vendored $2\to4$ phase-space driver like `pi0.c`.
+  poly. (Updated 2026-11: the earlier "still no vendored $2\to4$
+  phase-space driver like `pi0.c`" is out of date — `kinc2/` now vendors
+  `gamgam` and `peripp`, `kinc2-driver/check_eemm_gamgam` gates the
+  $2\to4$ kinematics against $M_{ij}$, and `eemm/eemm_vegas.c` is a VEGAS
+  $e^+e^-\to e^+e^-\mu^+\mu^-$ driver — an integral-only sanity check at
+  15 GeV beams with no minimum-$|t|$ cut, not a published cross section.)
 
 ## Open questions not yet filed into a topic
 
