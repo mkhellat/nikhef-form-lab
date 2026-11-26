@@ -102,3 +102,42 @@ target_include_directories(digit_loss_eemm_cdc PRIVATE
   ${NUMERIC_DIR} ${CDC_DIR} ${ME_DIR})
 target_link_libraries(digit_loss_eemm_cdc PRIVATE kinc2 ${MUMU_MATH_LIBS})
 add_test(NAME digit_loss_eemm_cdc COMMAND $<TARGET_FILE:digit_loss_eemm_cdc>)
+
+# ---- VEGAS drivers (vegas/ copy) ----
+
+add_library(vegas_lib STATIC ${MUMU_ROOT}/vegas/vegas.c)
+target_include_directories(vegas_lib PUBLIC ${MUMU_ROOT}/vegas)
+# vegas.c calls ipow/iipow from kinc2 (static-lib order matters on GNU ld).
+target_link_libraries(vegas_lib PUBLIC kinc2 ${MUMU_MATH_LIBS})
+
+# pi0 2->3 VEGAS scan; --check exit status is the verdict (~11 s locally).
+add_executable(xsec_pi0_vegas ${DRIVER_DIR}/xsec_pi0_vegas.c)
+target_link_libraries(xsec_pi0_vegas PRIVATE kinc2 vegas_lib ${MUMU_MATH_LIBS})
+add_test(NAME xsec_pi0_vegas
+  COMMAND $<TARGET_FILE:xsec_pi0_vegas> --check --calls 300000 --iters 10)
+set_tests_properties(xsec_pi0_vegas PROPERTIES
+  PASS_REGULAR_EXPRESSION "PASS: xsec_pi0_vegas" FAIL_REGULAR_EXPRESSION "FAIL"
+  TIMEOUT 120)
+
+# eemm 2->4 VEGAS driver. Uses getopt_long (<getopt.h>), which MSVC lacks,
+# so it is built only where that header exists (Linux, macOS, MinGW).
+include(CheckIncludeFile)
+check_include_file(getopt.h MUMU_HAVE_GETOPT_H)
+if(MUMU_HAVE_GETOPT_H)
+  add_executable(eemm_vegas
+    ${MUMU_ROOT}/eemm/eemm_vegas.c
+    ${CDC_DIR}/cdc_fp.c
+    ${ME_DIR}/eval_naive_cdc.c
+    ${ME_DIR}/dressed_naive_cdc.c
+  )
+  target_include_directories(eemm_vegas PRIVATE ${NUMERIC_DIR} ${CDC_DIR} ${ME_DIR})
+  target_link_libraries(eemm_vegas PRIVATE kinc2 vegas_lib ${MUMU_MATH_LIBS})
+  add_test(NAME eemm_vegas COMMAND $<TARGET_FILE:eemm_vegas>)
+  add_test(NAME eemm_vegas_peripp COMMAND $<TARGET_FILE:eemm_vegas> peripp)
+  set_tests_properties(eemm_vegas PROPERTIES
+    PASS_REGULAR_EXPRESSION "PASS: eemm_vegas(\r?\n|$)" FAIL_REGULAR_EXPRESSION "FAIL" TIMEOUT 120)
+  set_tests_properties(eemm_vegas_peripp PROPERTIES
+    PASS_REGULAR_EXPRESSION "PASS: eemm_vegas_peripp" FAIL_REGULAR_EXPRESSION "FAIL" TIMEOUT 120)
+else()
+  message(STATUS "getopt.h not found: skipping eemm_vegas")
+endif()
