@@ -13,3 +13,8 @@ numeric/mc_digit_loss
 cdc_fp/validation/oracle_cdc_fp
 cdc_fp/validation/.oracle_out.txt
 cdc_fp/validation/.ftn_gen.f
+cdc_fp/test_cdc_fp
+eemm/eemm_vegas
+kinc2-driver/digit_loss_eemm_cdc
+me/compare_naive_cdc
+vegas/test_vegas_toy
